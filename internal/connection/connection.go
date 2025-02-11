@@ -7,11 +7,11 @@ type Config struct {
 }
 
 var (
-	NewUserChannel       chan api.User    = make(chan api.User)
-	FriendRequestChannel chan api.Friends = make(chan api.Friends)
+	NewUserChannel       chan api.User   = make(chan api.User)
+	FriendRequestChannel chan api.Friend = make(chan api.Friend)
 )
 
 func RequestFriend(user api.User, data api.Friend) (success bool, receiptData api.Friend) {
 	// start a new stream with friend request protocol
-	return false, ""
+	return false, api.Friend{}
 }
