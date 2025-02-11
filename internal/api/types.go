@@ -10,7 +10,7 @@ type Interest struct {
 
 // A [User] is a peer whose interests we have discovered.
 type User struct {
-	UserID          string
+	UserID          ID
 	CommonInterests []Interest
 }
 
@@ -19,4 +19,8 @@ type Friend struct {
 	user  User
 	Photo string
 	Name  string
+}
+
+type ID struct {
+	address string
 }
