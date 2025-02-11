@@ -1,41 +1,47 @@
+package main
 
-type CommonInterest struct {
-	Category    string
+import "fmt"
+
+
+// Define struct for interest
+type Interest struct {
+	Category    string //TODO: enum
 	Description string
 }
 
-type Peer struct {
-	CommonInterests []CommonInterest
-	Photo           string
-	Name            string
+// Define struct for discovered peers (those you find)
+type User struct {
+	UserID   string
+	CommonInterests []Interest
 }
 
-// Function to get a list of peers with common interests
-func getPeers() []CommonInterest {
-	return []CommonInterest{
-		{"Films/TV", "Sci-fi, Action movies"},
-		{"Music", "Rock, Pop, Classical"},
-	}
+// Define struct for peer (connected peers), now includes Discovered struct
+type Friends struct {
+	user User
+	Photo      string
+	Name       string
 }
 
-// Function to get a list of connected peers, which includes photo and name
-func getConnectedPeers() []Peer {
-	return []Peer{
-		{
-			CommonInterests: []CommonInterest{
-				{"Films/TV", "Action movies, Thrillers"},
-				{"Music", "Jazz, Blues"},
-			},
-			Photo: "http://example.com/photo1.jpg",
-			Name:  "Alice",
-		},
-		{
-			CommonInterests: []CommonInterest{
-				{"Sports", "Soccer, Tennis"},
-				{"Books", "Science fiction, Historical"},
-			},
-			Photo: "http://example.com/photo2.jpg",
-			Name:  "Bob",
-		},
-	}
+
+//Front calls Middle implements
+//stores	
+func seen(userID int){
+
+}
+
+func sendFriendRequest(userid UserID){
+	
+}
+
+//Middle calls Front implemnets
+
+func onRefreshFriends(friends []Friend){
+	//refreshes friend UI
+}
+
+
+
+
+func onRefreshUsers(users []User ){
+	//refreshes user UI
 }

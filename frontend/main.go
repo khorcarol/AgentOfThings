@@ -7,7 +7,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func main() {
+func fyne() {
 	// Create a new Fyne app
 	myApp := app.New()
 

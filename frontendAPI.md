@@ -44,8 +44,6 @@
         - Name
         - Message
 
-
-
 ## API Structure
 
 ### Structs
