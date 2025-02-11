@@ -58,3 +58,25 @@
 #### getCommonInterests
 - returns list of Interest
 
+//Front calls Middle implements
+//stores
+func seen(userID int){
+
+}
+
+func sendFriendRequest(userid UserID){
+
+}
+
+//Middle calls Front implemnets
+
+func onRefreshFriends(friends []Friend){
+	//refreshes friend UI
+}
+
+
+
+
+func onRefreshUsers(users []User ){
+	//refreshes user UI
+}
