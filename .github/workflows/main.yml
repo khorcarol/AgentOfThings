@@ -13,20 +13,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Extract Go version
-        id: go-version
-        run: |
-          echo "go-version=$(grep '^go ' go.mod | awk '{print $2}')" >> $GITHUB_ENV
-
-      - name: Set up Go
+      - name: Use Go 1.23.6
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ env.go-version }}
+          go-version: "1.23.6"
 
-      - name: Install dependencies
+      - name: Install Go modules
         run: go mod download
 
       - name: Cache golangci-lint
@@ -44,9 +39,13 @@ jobs:
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
             sh -s -- -b $(go env GOPATH)/bin v1.52.2
 
+      # Restrict lint checking to your modules
+      # and exclude hostedtoolcache if needed.
       - name: Run golangci-lint
-        # Restrict linting to your modules only
-        run: golangci-lint run ./...
+        run: |
+          golangci-lint run ./... \
+            --timeout=5m \
+            --exclude '/opt/hostedtoolcache/go/'
 
       - name: Install gofumpt
         run: go install mvdan.cc/gofumpt@v0.6.0
@@ -58,29 +57,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Check out code
         uses: actions/checkout@v3
 
-      - name: Extract Go version
-        id: go-version
-        run: |
-          echo "go-version=$(grep '^go ' go.mod | awk '{print $2}')" >> $GITHUB_ENV
-
-      - name: Set up Go
+      - name: Use Go 1.23.6
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ env.go-version }}
+          go-version: "1.23.6"
 
-      - name: Install OS dependencies (libxkbcommon, wayland, Vulkan, etc.)
+      - name: Install OS dependencies (pkg-config, xkbcommon, Wayland, Vulkan, X11)
         run: |
           sudo apt-get update
           sudo apt-get install -y \
             pkg-config \
             libxkbcommon-dev \
             libwayland-dev \
-            libvulkan-dev
+            libvulkan-dev \
+            libx11-dev
 
-      - name: Install go modules
+      - name: Install Go modules
         run: go mod download
 
       - name: Run Go tests
