@@ -82,14 +82,12 @@ func (registry *HandshakeRegistry) RecordFailure(peerID peer.ID) {
 type HandshakeManager struct {
 	Registry         *HandshakeRegistry
 	HandshakeService *HandshakeService
-	LocalPeerID      peer.ID
 }
 
-func NewHandshakeManager(registry *HandshakeRegistry, handshakeService *HandshakeService, localPeerID peer.ID) *HandshakeManager {
+func NewHandshakeManager(registry *HandshakeRegistry, handshakeService *HandshakeService) *HandshakeManager {
 	return &HandshakeManager{
 		Registry:         registry,
 		HandshakeService: handshakeService,
-		LocalPeerID:      localPeerID,
 	}
 }
 
@@ -105,7 +103,7 @@ func (manager *HandshakeManager) MaybeHandshake(ctx context.Context, remotePeerI
 		return
 	}
 
-	if !ShouldInitiate(manager.LocalPeerID, remotePeerID) {
+	if !ShouldInitiate(manager.HandshakeService.Host.ID(), remotePeerID) {
 		log.Printf("handshake_manager: not initiating handshake with peer %s", remotePeerID)
 		return
 	}
