@@ -45,7 +45,8 @@ jobs:
             sh -s -- -b $(go env GOPATH)/bin v1.52.2
 
       - name: Run golangci-lint
-        run: golangci-lint run
+        # Restrict linting to your modules only
+        run: golangci-lint run ./...
 
       - name: Install gofumpt
         run: go install mvdan.cc/gofumpt@v0.6.0
@@ -70,10 +71,14 @@ jobs:
         with:
           go-version: ${{ env.go-version }}
 
-      - name: Install OS dependencies (libxkbcommon, wayland, etc.)
+      - name: Install OS dependencies (libxkbcommon, wayland, Vulkan, etc.)
         run: |
           sudo apt-get update
-          sudo apt-get install -y pkg-config libxkbcommon-dev libwayland-dev
+          sudo apt-get install -y \
+            pkg-config \
+            libxkbcommon-dev \
+            libwayland-dev \
+            libvulkan-dev
 
       - name: Install go modules
         run: go mod download
