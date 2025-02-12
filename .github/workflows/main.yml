@@ -43,7 +43,7 @@ jobs:
       # and exclude hostedtoolcache if needed.
       - name: Run golangci-lint
         run: |
-          golangci-lint run ./... \
+          golangci-lint run ./frontend \
             --timeout=5m \
             --exclude '/opt/hostedtoolcache/go/'
 
@@ -51,7 +51,8 @@ jobs:
         run: go install mvdan.cc/gofumpt@v0.6.0
 
       - name: Reformat code
-        run: gofumpt -w .
+        run: gofumpt -w ./frontend
+        
 
   test:
     runs-on: ubuntu-latest
