@@ -19,7 +19,6 @@ const (
 type handshakeRecord struct {
 	lastAttempt time.Time
 	success     bool
-	failedCount int
 }
 
 // HandshakeRegistry is a table of peer.ID -> [handshakeRecord] mappings to track when handshakes were last attempted.
@@ -58,7 +57,6 @@ func (registry *HandshakeRegistry) RecordSuccess(peerID peer.ID) {
 	registry.records[peerID] = &handshakeRecord{
 		lastAttempt: time.Now(),
 		success:     true,
-		failedCount: 0,
 	}
 }
 
@@ -68,12 +66,10 @@ func (registry *HandshakeRegistry) RecordFailure(peerID peer.ID) {
 	if rec, exists := registry.records[peerID]; exists {
 		rec.lastAttempt = time.Now()
 		rec.success = false
-		rec.failedCount++
 	} else {
 		registry.records[peerID] = &handshakeRecord{
 			lastAttempt: time.Now(),
 			success:     false,
-			failedCount: 1,
 		}
 	}
 }
