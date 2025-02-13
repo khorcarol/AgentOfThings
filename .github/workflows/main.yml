@@ -23,6 +23,8 @@ jobs:
 
       - name: Install Go modules
         run: go mod download
+        # If you have a single go.mod at the repo root, no working-directory is needed.
+        # If there are separate modules, you might need to run this for each module.
 
       - name: Cache golangci-lint
         id: golangci-lint-cache
@@ -37,21 +39,18 @@ jobs:
         if: steps.golangci-lint-cache.outputs.cache-hit != 'true'
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
-            sh -s -- -b $(go env GOPATH)/bin v1.52.2
+            sh -s -- -b "$(go env GOPATH)"/bin v1.52.2
 
-      # Restrict lint checking to your modules
-      # and exclude hostedtoolcache if needed.
       - name: Run golangci-lint
         run: |
-          golangci-lint run ./frontend \
-            --timeout=5m \
-            --exclude '/opt/hostedtoolcache/go/'
+          golangci-lint run ./frontend/... ./internal/... --timeout=5m
+        # This ensures only your directories are scanned.
 
       - name: Install gofumpt
         run: go install mvdan.cc/gofumpt@v0.6.0
 
       - name: Reformat code
-        run: gofumpt -w ./frontend
+        run: gofumpt -w ./frontend ./internal
         
 
   test:
@@ -65,7 +64,7 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: "1.23.6"
-
+      
       - name: Install OS dependencies (pkg-config, xkbcommon, Wayland, Vulkan, X11)
         run: |
           sudo apt-get update
@@ -85,6 +84,7 @@ jobs:
 
       - name: Install Go modules
         run: go mod download
+        # Update this if you have separate go.mod files.
 
       - name: Run Go tests
-        run: go test ./... -v
+        run: go test ./frontend/... ./internal/... -v
