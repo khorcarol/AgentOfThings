@@ -41,7 +41,7 @@ jobs:
 
       - name: Run golangci-lint
         run: |
-          golangci-lint run ./frontend/... ./internal/... --timeout=5m --skip-dirs '(^|/)(pkg/mod)($|/)'
+          golangci-lint run ./frontend/... ./internal/... --timeout=5m --skip-dirs '(^|/)(pkg/mod|opt/hostedtoolcache/go)($|/)'
 
       - name: Install gofumpt
         run: go install mvdan.cc/gofumpt@v0.6.0
