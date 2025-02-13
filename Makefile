@@ -10,4 +10,6 @@ clean:
 	rm -rf build/*
 
 format: 
+	go mod tidy
 	go fmt ./...
+
