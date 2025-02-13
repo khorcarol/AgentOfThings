@@ -63,7 +63,7 @@ jobs:
 
       - name: Reformat Code with gofumpt
         run: |
-          gofumpt -w ./...
+          gofumpt -w .
 
   test:
     name: Run Go Tests
