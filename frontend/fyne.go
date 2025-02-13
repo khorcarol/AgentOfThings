@@ -1,6 +1,7 @@
 package main
 
 import (
+	// "time"
 	"image/color"
 	"log"
 	"os"
@@ -14,7 +15,6 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	
 )
 
 // Custom colors
@@ -27,8 +27,8 @@ var (
 // Custom theme implementation
 type customTheme struct {
 	fyne.Theme
-	regularFont    fyne.Resource
-	primaryColor   color.Color
+	regularFont     fyne.Resource
+	primaryColor    color.Color
 	backgroundColor color.Color
 }
 
@@ -79,14 +79,11 @@ type Friend struct {
 }
 
 var (
-	friendsList   *widget.List
-	usersList     *widget.List
+	friendsList    *widget.List
+	usersList      *widget.List
 	currentFriends []Friend
 	currentUsers   []User
 )
-
-
-
 
 func createFriendsUI() fyne.CanvasObject {
 	friendsList = widget.NewList(
@@ -111,7 +108,7 @@ func createFriendsUI() fyne.CanvasObject {
 
 			nameLabel := details.Objects[0].(*widget.Label)
 			nameLabel.SetText(friend.Name)
-			
+
 			interestsLabel := details.Objects[1].(*widget.Label)
 			interestsLabel.SetText(formatInterests(friend.User.CommonInterests))
 		},
@@ -155,7 +152,7 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			user := currentUsers[i]
 			container := o.(*fyne.Container)
-			
+
 			idLabel := container.Objects[0].(*widget.Label)
 			idLabel.SetText(user.UserID)
 
@@ -194,7 +191,7 @@ func showUserDetailsDialog(user User, parent fyne.Window) {
 		closeBtn,
 	)
 	content.Add(buttons)
-	userDetailsDialog = dialog.NewCustomWithoutButtons( "User Details",
+	userDetailsDialog = dialog.NewCustomWithoutButtons("User Details",
 		content,
 		parent,
 	)
@@ -212,18 +209,25 @@ func SendFriendRequest(userID string) {
 
 func main() {
 	regularFont := loadFont("Inter_24pt-Bold.ttf")
-	
 
 	myApp := app.New()
 	myWindow := myApp.NewWindow("Agent of Friends")
 	myWindow.Resize(fyne.NewSize(800, 600))
 	myApp.Settings().SetTheme(&customTheme{
-		Theme:          theme.DefaultTheme(),
-		regularFont:    regularFont,
-		primaryColor:   primaryColor,
+		Theme:           theme.DefaultTheme(),
+		regularFont:     regularFont,
+		primaryColor:    primaryColor,
 		backgroundColor: backgroundColor,
 	})
-	
+
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Peers", createUsersUI(myWindow)),
+		container.NewTabItem("Friends", createFriendsUI()),
+	)
+	tabs.SetTabLocation(container.TabLocationTop)
+
+	myWindow.SetContent(tabs)
+
 	onRefreshUsers([]User{
 		{
 			UserID: "user123",
@@ -234,24 +238,33 @@ func main() {
 		},
 	})
 
+	refreshButton := widget.NewButton("Refresh Users", func() {
+
+		onRefreshUsers([]User{
+
+			{
+
+				UserID: "newUser456",
+
+				CommonInterests: []Interest{
+
+					{Category: "Art", Description: "Painting"},
+				},
+			},
+		})
+
+	})
+	myWindow.SetContent(container.NewVBox(tabs, refreshButton))
+
 	onRefreshFriends([]Friend{
 		{
-        User: User{
-            UserID: "123",
-            CommonInterests: []Interest{{"Sports", "Basketball"}},
-        },
-        Name: "John Doe",
-        Photo: "path/to/image.jpg",
-    },
-		
+			User: User{
+				UserID:          "123",
+				CommonInterests: []Interest{{"Sports", "Basketball"}},
+			},
+			Name:  "John Doe",
+			Photo: "path/to/image.jpg",
+		},
 	})
-
-	tabs := container.NewAppTabs(
-		container.NewTabItem("Peers", createUsersUI(myWindow)),
-		container.NewTabItem("Friends", createFriendsUI()),
-	)
-	tabs.SetTabLocation(container.TabLocationTop)
-
-	myWindow.SetContent(tabs)
 	myWindow.ShowAndRun()
-} 
+}
