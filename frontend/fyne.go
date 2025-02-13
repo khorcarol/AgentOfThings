@@ -2,14 +2,65 @@ package main
 
 import (
 	"image/color"
+	"log"
+	"os"
+	"path/filepath"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	
 )
+
+// Custom colors
+var (
+	primaryColor    = color.NRGBA{R: 0, G: 120, B: 215, A: 255}   // Blue
+	backgroundColor = color.NRGBA{R: 245, G: 245, B: 245, A: 255} // Off-white
+	listItemColor   = color.White
+)
+
+// Custom theme implementation
+type customTheme struct {
+	fyne.Theme
+	regularFont    fyne.Resource
+	primaryColor   color.Color
+	backgroundColor color.Color
+}
+
+func (c *customTheme) Font(style fyne.TextStyle) fyne.Resource {
+	if !style.Bold && !style.Italic {
+		return c.regularFont
+	}
+	return c.Theme.Font(style)
+}
+
+func (c *customTheme) Color(name fyne.ThemeColorName, _ fyne.ThemeVariant) color.Color {
+	switch name {
+	case theme.ColorNamePrimary:
+		return c.primaryColor
+	case theme.ColorNameBackground:
+		return c.backgroundColor
+	default:
+		return theme.DefaultTheme().Color(name, theme.VariantLight)
+	}
+}
+
+// Load font from file
+func loadFont(path string) fyne.Resource {
+	fontData, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatalf("Failed to load font: %v", err)
+	}
+	return &fyne.StaticResource{
+		StaticName:    filepath.Base(path),
+		StaticContent: fontData,
+	}
+}
 
 type Interest struct {
 	Category    string
@@ -35,13 +86,6 @@ var (
 )
 
 
-
-// Add these custom colors
-var (
-	primaryColor    = color.NRGBA{R: 0, G: 120, B: 215, A: 255} // Blue
-	backgroundColor = color.NRGBA{R: 245, G: 245, B: 245, A: 255} // Off-white
-	listItemColor   = color.White
-)
 
 
 func createFriendsUI() fyne.CanvasObject {
@@ -127,9 +171,7 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 
 func showUserDetailsDialog(user User, parent fyne.Window) {
 	content := container.NewVBox(
-		widget.NewLabelWithStyle("User Details", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		widget.NewSeparator(),
-		widget.NewLabel("ID: " + user.UserID),
 		widget.NewLabel("Common Interests:"),
 	)
 
@@ -137,19 +179,27 @@ func showUserDetailsDialog(user User, parent fyne.Window) {
 		content.Add(widget.NewLabel("- " + interest.Category + ": " + interest.Description))
 	}
 
+	var userDetailsDialog dialog.Dialog
+
 	sendBtn := widget.NewButton("Send Friend Request", func() {
 		SendFriendRequest(user.UserID)
 		dialog.ShowInformation("Request Sent", "Friend request sent to "+user.UserID, parent)
 	})
+	closeBtn := widget.NewButton("Close", func() {
+		userDetailsDialog.Hide()
+	})
 
-	content.Add(sendBtn)
-
-	dialog.ShowCustom(
-		"",
-		"Close",
+	buttons := container.NewHBox(
+		sendBtn,
+		closeBtn,
+	)
+	content.Add(buttons)
+	userDetailsDialog = dialog.NewCustomWithoutButtons( "User Details",
 		content,
 		parent,
 	)
+
+	userDetailsDialog.Show()
 }
 
 func Seen(userID string) {
@@ -161,10 +211,19 @@ func SendFriendRequest(userID string) {
 }
 
 func main() {
-	myApp := app.New()
-	myWindow := myApp.NewWindow("Social Connect")
-	myWindow.Resize(fyne.NewSize(800, 600))
+	regularFont := loadFont("Inter_24pt-Bold.ttf")
+	
 
+	myApp := app.New()
+	myWindow := myApp.NewWindow("Agent of Friends")
+	myWindow.Resize(fyne.NewSize(800, 600))
+	myApp.Settings().SetTheme(&customTheme{
+		Theme:          theme.DefaultTheme(),
+		regularFont:    regularFont,
+		primaryColor:   primaryColor,
+		backgroundColor: backgroundColor,
+	})
+	
 	onRefreshUsers([]User{
 		{
 			UserID: "user123",
@@ -195,6 +254,4 @@ func main() {
 
 	myWindow.SetContent(tabs)
 	myWindow.ShowAndRun()
-}
-
-
+} 
