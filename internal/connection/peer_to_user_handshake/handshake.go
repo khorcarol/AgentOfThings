@@ -45,8 +45,8 @@ func NewHandshakeService(host host.Host) *HandshakeService {
 // InitiateHandshake dials a remote peer, sends our interests (as a JSON HandshakeMessage),
 // half-closes the write side, then waits for a response.
 // It returns the remote peer’s handshake message on success.
-func (hs *HandshakeService) InitiateHandshake(ctx context.Context, remote peer.ID) (*HandshakeMessage, error) {
-	stream, err := hs.Host.NewStream(ctx, remote, protocol.ID(HandshakeProtocolID))
+func (service *HandshakeService) InitiateHandshake(ctx context.Context, remote peer.ID) (*HandshakeMessage, error) {
+	stream, err := service.Host.NewStream(ctx, remote, protocol.ID(HandshakeProtocolID))
 	if err != nil {
 		return nil, fmt.Errorf("handshake: failed to open stream to peer %s: %w", remote, err)
 	}
@@ -91,7 +91,7 @@ func (hs *HandshakeService) InitiateHandshake(ctx context.Context, remote peer.I
 
 // handshakeHandler is invoked when a remote peer connects.
 // It decodes the remote’s handshake message and responds with our interests.
-func (hs *HandshakeService) handshakeHandler(stream network.Stream) {
+func (service *HandshakeService) handshakeHandler(stream network.Stream) {
 	defer stream.Close()
 
 	if err := stream.SetDeadline(time.Now().Add(HandshakeTimeout)); err != nil {
@@ -129,27 +129,27 @@ func (hs *HandshakeService) handshakeHandler(stream network.Stream) {
 }
 
 // encodeToStream marshals the given message to JSON with a length prefix and writes it to w.
-func encodeToStream(w io.Writer, message interface{}) error {
+func encodeToStream(writer io.Writer, message interface{}) error {
 	data, err := json.Marshal(message)
 	if err != nil {
 		return err
 	}
 	length := uint32(len(data))
-	if err := binary.Write(w, binary.LittleEndian, length); err != nil {
+	if err := binary.Write(writer, binary.LittleEndian, length); err != nil {
 		return err
 	}
-	_, err = w.Write(data)
+	_, err = writer.Write(data)
 	return err
 }
 
 // decodeFromStream reads a length-prefixed JSON message from r into the provided message.
-func decodeFromStream(r io.Reader, message interface{}) error {
+func decodeFromStream(reader io.Reader, message interface{}) error {
 	var length uint32
-	if err := binary.Read(r, binary.LittleEndian, &length); err != nil {
+	if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
 		return err
 	}
 	data := make([]byte, length)
-	if _, err := io.ReadFull(r, data); err != nil {
+	if _, err := io.ReadFull(reader, data); err != nil {
 		return err
 	}
 	return json.Unmarshal(data, message)
