@@ -9,9 +9,9 @@ on:
       - main
 
 jobs:
-  lint-and-format:
+  lint:
+    name: Lint Code
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -41,18 +41,11 @@ jobs:
 
       - name: Run golangci-lint
         run: |
-          golangci-lint run ./frontend/... ./internal/... --timeout=5m --skip-dirs '(^|/)(pkg/mod|opt/hostedtoolcache/go)($|/)'
+          golangci-lint run ./... --timeout=5m --skip-dirs '(^|/)(pkg/mod|opt/hostedtoolcache/go)($|/)'
 
-      - name: Install gofumpt
-        run: go install mvdan.cc/gofumpt@v0.6.0
-
-      - name: Reformat code
-        run: gofumpt -w ./frontend ./internal
-        
-
-  test:
+  format:
+    name: Format Code
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -61,7 +54,29 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: "1.23.6"
-      
+
+      - name: Install Go modules
+        run: go mod download
+
+      - name: Install gofumpt
+        run: go install mvdan.cc/gofumpt@v0.6.0
+
+      - name: Reformat Code with gofumpt
+        run: |
+          gofumpt -w ./...
+
+  test:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Use Go 1.23.6
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.6"
+
       - name: Install OS dependencies (pkg-config, xkbcommon, Wayland, Vulkan, X11)
         run: |
           sudo apt-get update
@@ -83,4 +98,4 @@ jobs:
         run: go mod download
 
       - name: Run Go tests
-        run: go test ./frontend/... ./internal/... -v
+        run: go test ./... -v
