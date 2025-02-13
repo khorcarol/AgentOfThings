@@ -2,21 +2,25 @@ package api
 
 import "github.com/khorcarol/AgentOfThings/internal/api/interests"
 
-// Define struct for interest
+// A [interests.InterestCategory] and a string to represent the data.
 type Interest struct {
 	Category    interests.InterestCategory
 	Description string
 }
 
-// Define struct for discovered peers (those you find)
+// A [User] is a peer whose interests we have discovered.
 type User struct {
-	UserID          string
+	UserID          ID
 	CommonInterests []Interest
 }
 
-// Define struct for peer (connected peers), now includes Discovered struct
-type Friends struct {
+// A [Friend] is a [User] who we have requested to be friends with, and who has also requested to be friends with us.
+type Friend struct {
 	user  User
 	Photo string
 	Name  string
+}
+
+type ID struct {
+	address string
 }

@@ -1,15 +1,13 @@
-package main
+package connection
 
-type Config struct {
-	X int
-}
+import "github.com/khorcarol/AgentOfThings/internal/api"
 
 var (
-	NewUserChannel       chan string = make(chan string)
-	FriendRequestChannel chan string = make(chan string)
+	NewUserChannel       chan api.User   = make(chan api.User)
+	FriendRequestChannel chan api.Friend = make(chan api.Friend)
 )
 
-func RequestFriend(ID string, data string) (success bool, receiptData string) {
+func RequestFriend(user api.User, data api.Friend) (success bool, receiptData api.Friend) {
 	// start a new stream with friend request protocol
-	return false, ""
+	return false, api.Friend{}
 }

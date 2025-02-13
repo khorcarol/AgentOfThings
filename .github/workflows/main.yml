@@ -1,0 +1,101 @@
+name: Go CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Use Go 1.23.6
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.6"
+
+      - name: Install Go modules
+        run: go mod download
+
+      - name: Cache golangci-lint
+        id: golangci-lint-cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/golangci-lint
+          key: ${{ runner.os }}-golangci-lint-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golangci-lint-
+
+      - name: Install golangci-lint
+        if: steps.golangci-lint-cache.outputs.cache-hit != 'true'
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | \
+            sh -s -- -b "$(go env GOPATH)"/bin v1.52.2
+
+      - name: Run golangci-lint
+        run: |
+          golangci-lint run ./... --timeout=5m --skip-dirs '(^|/)(pkg/mod|opt/hostedtoolcache/go)($|/)'
+
+  format:
+    name: Format Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Use Go 1.23.6
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.6"
+
+      - name: Install Go modules
+        run: go mod download
+
+      - name: Install gofumpt
+        run: go install mvdan.cc/gofumpt@v0.6.0
+
+      - name: Reformat Code with gofumpt
+        run: |
+          gofumpt -l -w .
+
+  test:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Use Go 1.23.6
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.6"
+
+      - name: Install OS dependencies (pkg-config, xkbcommon, Wayland, Vulkan, X11)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            pkg-config \
+            libxkbcommon-dev \
+            libwayland-dev \
+            libvulkan-dev \
+            libx11-dev \
+            gcc \
+            libx11-xcb-dev \
+            libxkbcommon-x11-dev \
+            libgles2-mesa-dev \
+            libegl1-mesa-dev \
+            libffi-dev \
+            libxcursor-dev
+
+      - name: Install Go modules
+        run: go mod download
+
+      - name: Run Go tests
+        run: go test ./... -v
