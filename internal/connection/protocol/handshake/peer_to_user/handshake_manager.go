@@ -1,4 +1,4 @@
-package peer_to_user_handshake
+package peer_to_user
 
 import (
 	"context"
@@ -11,9 +11,10 @@ import (
 
 const (
 	handshakeValidityDuration = 1 * time.Hour
-	handshakeFailureTimeout   = 10 * time.Minute // Prevents rediscovering the same "new" peer over and over and flooding them.
-	maxHandshakeAttempts      = 3
-	retryDelay                = 2 * time.Second
+	// Prevents rediscovering the same "new" peer over and over and flooding them.
+	handshakeFailureTimeout = 10 * time.Minute
+	maxHandshakeAttempts    = 3
+	retryDelay              = 2 * time.Second
 )
 
 type handshakeRecord struct {
@@ -93,15 +94,15 @@ func NewHandshakeManager(registry *HandshakeRegistry, handshakeService *Handshak
 // and only if ShouldInitiate indicates that our local side should initiate.
 // It then retries on failure up to maxHandshakeAttempts. If all attempts fail,
 // it records the failure so that we don’t try again until handshakeFailureTimeout expires.
-func (manager *HandshakeManager) MaybeHandshake(ctx context.Context, remotePeerID peer.ID) {
+func (manager *HandshakeManager) MaybeHandshake(ctx context.Context, remotePeerID peer.ID) (bool, error) {
 	if !ShouldInitiate(manager.HandshakeService.Host.ID(), remotePeerID) {
 		log.Printf("handshake_manager: not initiating handshake with peer %s", remotePeerID)
-		return
+		return false, nil
 	}
 
 	if !manager.Registry.ShouldHandshake(remotePeerID) {
 		log.Printf("handshake_manager: peer %s was attempted too recently, skipping handshake", remotePeerID)
-		return
+		return false, nil
 	}
 
 	var lastErr error
@@ -122,10 +123,11 @@ func (manager *HandshakeManager) MaybeHandshake(ctx context.Context, remotePeerI
 			log.Printf("handshake_manager: handshake with peer %s failed on attempt %d: %v", remotePeerID, attempt, err)
 		}()
 		if lastErr == nil {
-			return
+			return true, nil
 		}
 		time.Sleep(retryDelay)
 	}
 	log.Printf("handshake_manager: handshake with peer %s failed after %d attempts: %v", remotePeerID, maxHandshakeAttempts, lastErr)
 	manager.Registry.RecordFailure(remotePeerID)
+	return false, lastErr
 }

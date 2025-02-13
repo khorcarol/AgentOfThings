@@ -1,4 +1,4 @@
-package peer_to_user_handshake
+package peer_to_user
 
 import (
 	"bytes"

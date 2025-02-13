@@ -1,4 +1,4 @@
-package peer_to_user_handshake
+package peer_to_user
 
 import (
 	"context"
@@ -100,6 +100,7 @@ func (service *HandshakeService) handshakeHandler(stream network.Stream) {
 		return
 	}
 
+	// TODO: write remoteMessage to some channel to get the data to the backend
 	var remoteMessage HandshakeMessage
 	if err := decodeFromStream(stream, &remoteMessage); err != nil {
 		log.Printf("handshake: failed to decode remote handshake message: %v", err)
