@@ -92,10 +92,11 @@ jobs:
             libgles2-mesa-dev \
             libegl1-mesa-dev \
             libffi-dev \
-            libxcursor-dev
+            libxcursor-dev \
+            libxrandr-dev
 
       - name: Install Go modules
         run: go mod download
 
       - name: Run Go tests
-        run: go test ./... -v --timeout=5m --skip-dirs '(^|/)(pkg/mod|opt/hostedtoolcache/go)($|/)'
+        run: go test ./... -v
