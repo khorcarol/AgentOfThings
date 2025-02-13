@@ -19,8 +19,9 @@ import (
 )
 
 const (
-	handshakeTimeout = 10 * time.Second
-	maxInterests     = 10 // Arbitrarily chosen for now, require discussion with team to properly choose.
+	HandshakeTimeout    = 10 * time.Second
+	maxInterests        = 10 // Arbitrarily chosen for now, require discussion with team to properly choose.
+	HandshakeProtocolID = "agentofthings/peer_to_user_handshake/0.0.1"
 )
 
 // HandshakeMessage represents the message exchanged during a handshake.
@@ -37,25 +38,15 @@ type HandshakeService struct {
 // NewHandshakeService creates a new handshake service and registers the stream handler.
 func NewHandshakeService(host host.Host) *HandshakeService {
 	service := &HandshakeService{Host: host}
-	host.SetStreamHandler(protocol.ID(HandshakeProtocolID()), service.handshakeHandler)
+	host.SetStreamHandler(protocol.ID(HandshakeProtocolID), service.handshakeHandler)
 	return service
-}
-
-// HandshakeProtocolID returns the protocol ID for this handshake, for use in the manager.
-func HandshakeProtocolID() string {
-	return "agentofthings/peer_to_user_handshake/0.0.2"
-}
-
-// HandshakeTimeout returns the handshake timeout duration, for use in the manager.
-func HandshakeTimeout() time.Duration {
-	return handshakeTimeout
 }
 
 // InitiateHandshake dials a remote peer, sends our interests (as a JSON HandshakeMessage),
 // half-closes the write side, then waits for a response.
 // It returns the remote peer’s handshake message on success.
 func (hs *HandshakeService) InitiateHandshake(ctx context.Context, remote peer.ID) (*HandshakeMessage, error) {
-	stream, err := hs.Host.NewStream(ctx, remote, protocol.ID(HandshakeProtocolID()))
+	stream, err := hs.Host.NewStream(ctx, remote, protocol.ID(HandshakeProtocolID))
 	if err != nil {
 		return nil, fmt.Errorf("handshake: failed to open stream to peer %s: %w", remote, err)
 	}
@@ -63,7 +54,7 @@ func (hs *HandshakeService) InitiateHandshake(ctx context.Context, remote peer.I
 
 	deadline, ok := ctx.Deadline()
 	if !ok {
-		deadline = time.Now().Add(handshakeTimeout)
+		deadline = time.Now().Add(HandshakeTimeout)
 	}
 	if err := stream.SetDeadline(deadline); err != nil {
 		log.Printf("handshake: setting deadline failed: %v", err)
@@ -103,7 +94,7 @@ func (hs *HandshakeService) InitiateHandshake(ctx context.Context, remote peer.I
 func (hs *HandshakeService) handshakeHandler(stream network.Stream) {
 	defer stream.Close()
 
-	if err := stream.SetDeadline(time.Now().Add(handshakeTimeout)); err != nil {
+	if err := stream.SetDeadline(time.Now().Add(HandshakeTimeout)); err != nil {
 		log.Printf("handshake: error setting deadline: %v", err)
 		stream.Reset()
 		return

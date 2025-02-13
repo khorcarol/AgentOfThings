@@ -1,13 +1,13 @@
 package main
 
 import (
-	"image/color"
-	"log"
-	"os"
 	"gioui.org/app"
 	"gioui.org/op"
 	"gioui.org/text"
 	"gioui.org/widget/material"
+	"image/color"
+	"log"
+	"os"
 )
 
 func main() {
@@ -21,7 +21,6 @@ func main() {
 	}()
 	app.Main()
 }
-
 
 func run(window *app.Window) error {
 	theme := material.NewTheme()

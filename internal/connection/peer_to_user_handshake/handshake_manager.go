@@ -23,7 +23,7 @@ type handshakeRecord struct {
 
 // HandshakeRegistry is a table of peer.ID -> [handshakeRecord] mappings to track when handshakes were last attempted.
 type HandshakeRegistry struct {
-	mutex   sync.Mutex
+	mutex   sync.Mutex // TODO: Improve this with MRSW lock.
 	records map[peer.ID]*handshakeRecord
 }
 
@@ -94,20 +94,20 @@ func NewHandshakeManager(registry *HandshakeRegistry, handshakeService *Handshak
 // It then retries on failure up to maxHandshakeAttempts. If all attempts fail,
 // it records the failure so that we don’t try again until handshakeFailureTimeout expires.
 func (manager *HandshakeManager) MaybeHandshake(ctx context.Context, remotePeerID peer.ID) {
-	if !manager.Registry.ShouldHandshake(remotePeerID) {
-		log.Printf("handshake_manager: peer %s was attempted too recently, skipping handshake", remotePeerID)
+	if !ShouldInitiate(manager.HandshakeService.Host.ID(), remotePeerID) {
+		log.Printf("handshake_manager: not initiating handshake with peer %s", remotePeerID)
 		return
 	}
 
-	if !ShouldInitiate(manager.HandshakeService.Host.ID(), remotePeerID) {
-		log.Printf("handshake_manager: not initiating handshake with peer %s", remotePeerID)
+	if !manager.Registry.ShouldHandshake(remotePeerID) {
+		log.Printf("handshake_manager: peer %s was attempted too recently, skipping handshake", remotePeerID)
 		return
 	}
 
 	var lastErr error
 	for attempt := 1; attempt <= maxHandshakeAttempts; attempt++ {
 		log.Printf("handshake_manager: handshake attempt %d with peer %s", attempt, remotePeerID)
-		handshakeCtx, cancel := context.WithTimeout(ctx, HandshakeTimeout())
+		handshakeCtx, cancel := context.WithTimeout(ctx, HandshakeTimeout)
 		// Each attempt gets its own cancel context.
 		func() {
 			defer cancel()
