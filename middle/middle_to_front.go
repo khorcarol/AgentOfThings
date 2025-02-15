@@ -1,7 +1,17 @@
 package middle
 
-import "github.com/kholcarol/AgentOfThings/middle"
+import (
+	"github.com/khorcarol/AgentOfThings/internal/api/types"
+	"github.com/khorcarol/AgentOfThings/internal/middle/users"
+)
 
-func seen()
 
+// A collection of functions to be used by the front end
+func seen(userID ID) {
+	
+}
+
+func sendFriendRequest(userID ID){
+
+}
 
