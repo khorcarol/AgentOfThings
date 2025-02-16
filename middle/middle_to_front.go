@@ -1,17 +1,17 @@
 package middle
 
 import (
-	"github.com/khorcarol/AgentOfThings/internal/api/types"
-	"github.com/khorcarol/AgentOfThings/internal/middle/users"
+	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/internal/middle"
 )
 
 
 // A collection of functions to be used by the front end
-func seen(userID ID) {
-	
+func seen(userID api.ID) {
+	middle.SetUserSeen(userID, true)
 }
 
-func sendFriendRequest(userID ID){
+func sendFriendRequest(userID api.ID){
 
 }
 

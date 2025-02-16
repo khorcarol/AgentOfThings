@@ -37,3 +37,11 @@ func rankUsers() []api.User{
 
 	return pq.To_list()
 }
+
+func SetUserSeen(id api.ID, val bool){
+	u, t := users[id]
+	if t{
+		u.Seen = val
+		users[id] = u
+	}
+}
