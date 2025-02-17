@@ -2,45 +2,73 @@ package middle
 
 import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
+
+	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 )
 
-import priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
+var users = make(map[string]api.User)
+var friends = make(map[string]api.User)
 
+// Modify scoreUser to score a pair of users instead of a single user
+func scoreUserPair(user1 api.User, user2 api.User) int {
+	score := 0
+	// Count common interests between both users
+	interests1 := make(map[api.Interest]bool)
 
-
-var users = make(map[api.ID]api.User)
-var friends = make(map[api.ID]api.User)
-
-// Assigns a score to a user, based on number of matches
-func scoreUser(user api.User) int{
-	var score = len(user.CommonInterests);
-	if user.Seen{
-		score -= 100;
+	for _, interest := range user1.CommonInterests {
+		interests1[interest] = true
 	}
+
+	for _, interest := range user2.CommonInterests {
+		if interests1[interest] {
+			score++
+		}
+	}
+
+	// Penalise if either user has been seen
+	if user1.Seen || user2.Seen {
+		score -= 1
+	}
+
 	return score
 }
 
-func rankUsers() []api.User{
+// Replace rankUsers with matchUsers
+func matchUsers() []priorityQueue.Pair[api.User] {
+	// Create a priority queue to store user pairs
+	totalPairs := (len(users) * (len(users) - 1)) / 2
+	pq := priorityQueue.NewPriorityQueue[priorityQueue.Pair[api.User]](totalPairs)
 
-	pq := priorityQueue.NewPriorityQueue[api.User](len(users))
+	// Compare each pair of users
+	for id1, user1 := range users {
+		for id2, user2 := range users {
+			// Skip if same user or if either user is already a friend
+			if id1 >= id2 {
+				continue
+			}
+			if _, ok := friends[id1]; ok {
+				continue
+			}
+			if _, ok := friends[id2]; ok {
+				continue
+			}
 
-
-	for id, user := range users {
-		_, ok := friends[id]
-		if ok {
-			continue
+			score := scoreUserPair(user1, user2)
+			pair := priorityQueue.Pair[api.User]{
+				First:  user1,
+				Second: user2,
+				Score:  score,
+			}
+			pq.Push(pair, score)
 		}
-		score := scoreUser(user)
-
-		pq.Push(user, score)
 	}
 
-	return pq.To_list()
+	return pq.To_pairs()
 }
 
-func SetUserSeen(id api.ID, val bool){
+func SetUserSeen(id string, val bool) {
 	u, t := users[id]
-	if t{
+	if t {
 		u.Seen = val
 		users[id] = u
 	}
