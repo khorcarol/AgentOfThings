@@ -1,4 +1,4 @@
-package priorityQueue
+package priorityQueue 
 
 import (
 	"container/heap"
@@ -19,10 +19,10 @@ type PriorityQueue[T any] struct {
 }
 
 // Heap functions
-func (h *tHeap) Len() int { return len(*h) }
+func (h tHeap) Len() int { return len(h) }
 
-func (h *tHeap) Less(i int, j int) bool {
-	return (*h)[i].priority < (*h)[j].priority
+func (h tHeap) Less(i int, j int) bool {
+	return h[i].priority > h[j].priority
 }
 
 func (h *tHeap) Push(x any){
@@ -39,7 +39,7 @@ func (h *tHeap) Pop() any{
 	old[n-1] = nil  // don't stop the GC from reclaiming the item eventually
 	item.priority= -1 // for safety
 	*h = old[0 : n-1]
-	return item.value
+	return item
 }
 
 func (h tHeap) Swap(i int, j int){
@@ -51,45 +51,48 @@ func (h tHeap) Swap(i int, j int){
 
 // Priority Queue Functions
 
-func NewPriorityQueue[T any](size int) PriorityQueue[T]{
-	
-	h := make(tHeap, size)
-	pq := PriorityQueue[T]{h, 0}
+func NewPriorityQueue[T any]() PriorityQueue[T]{
 
-	heap.Init(&pq.h)
+	h := make(tHeap, 0)
+	heap.Init(&h)
 
-	return pq
+	return PriorityQueue[T]{h, 0}
+
 }
 
 func (np PriorityQueue[T]) Len() int {
 	return np.length
 }
 
-func (pq PriorityQueue[T]) Push(val T, priority int){
+func (pq *PriorityQueue[T]) Push(val T, priority int){
 	item := new(Item)
 	item.value = val
 	item.priority = priority
 	heap.Push(&pq.h, item)
+	pq.length ++
 }
 
-func (pq PriorityQueue[T]) Pop() option.Option[T]{
+func (pq *PriorityQueue[T]) Pop() option.Option[T]{
 	if pq.length == 0{
 		return option.OptionNil[T]()
-	} else{
-		pq.length --
-		return option.OptionVal(pq.h.Pop().(T))
 	}
+
+	v := heap.Pop(&pq.h).(*Item)
+
+	pq.length --
+	return option.OptionVal(v.value.(T))
+	
 }
 
 func (pq PriorityQueue[T]) To_list() []T{
 	res := make([]T, pq.Len())
-	cp := pq
 	
-	for i:=0; i<cp.Len(); i++ {
-		val := cp.Pop()
+	for i:=0; i<pq.Len(); i++ {
+		val := pq.Pop()
 		if val.GetSet(){
 			res[i] = val.GetVal()
 		}
 	}
 	return res
 }
+
