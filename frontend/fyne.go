@@ -1,4 +1,4 @@
-package main
+package frontend
 
 import (
 	// "time"
@@ -207,8 +207,8 @@ func SendFriendRequest(userID string) {
 	println("Sending friend request to:", userID)
 }
 
-func main() {
-	regularFont := loadFont("Inter_24pt-Bold.ttf")
+func Main() {
+	regularFont := loadFont("./frontend/Inter_24pt-Bold.ttf")
 
 	myApp := app.New()
 	myWindow := myApp.NewWindow("Agent of Friends")

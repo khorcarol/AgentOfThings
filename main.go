@@ -1,20 +1,9 @@
 package main
 
 import (
-	"fmt"
-
-	"github.com/libp2p/go-libp2p"
+	"github.com/khorcarol/AgentOfThings/frontend"
 )
 
 func main() {
-	node, err := libp2p.New()
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Listen addresses:", node.Addrs())
-
-	if err := node.Close(); err != nil {
-		panic(err)
-	}
+	frontend.Main()
 }

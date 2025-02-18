@@ -12,7 +12,7 @@ type Interest struct {
 type User struct {
 	UserID          ID
 	CommonInterests []Interest
-	Seen 			bool
+	Seen            bool
 }
 
 // A [Friend] is a [User] who we have requested to be friends with, and who has also requested to be friends with us.
@@ -25,6 +25,3 @@ type Friend struct {
 type ID struct {
 	address string
 }
-
-
-

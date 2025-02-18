@@ -1,11 +1,11 @@
-package priorityQueue 
+package priorityQueue
 
 import (
-	"testing"
 	"github.com/khorcarol/AgentOfThings/lib/option"
+	"testing"
 )
 
-func Test_pops_correct_order(t *testing.T){
+func Test_pops_correct_order(t *testing.T) {
 	ls := [6]int{3, 4, 1, 6, 2, 5}
 
 	pq := NewPriorityQueue[int]()
@@ -13,9 +13,9 @@ func Test_pops_correct_order(t *testing.T){
 		pq.Push(e, i)
 	}
 
-	for i:=0; i<6; i++{
+	for i := 0; i < 6; i++ {
 		x := pq.Pop()
-		if !x.GetSet(){
+		if !x.GetSet() {
 			t.Fatalf("Fail on %s: Expected a value, got none", t.Name())
 		}
 		val := x.GetVal()
@@ -25,17 +25,17 @@ func Test_pops_correct_order(t *testing.T){
 	}
 }
 
-func Test_empty_returns_none(t *testing.T){
+func Test_empty_returns_none(t *testing.T) {
 	pq := NewPriorityQueue[int]()
 
 	res := pq.Pop()
 
-	if res != option.OptionNil[int](){
+	if res != option.OptionNil[int]() {
 		t.Fatalf("Fail on %s: Pop operation did not return Nil", t.Name())
 	}
 }
 
-func Test_only_pops_items(t *testing.T){
+func Test_only_pops_items(t *testing.T) {
 	pq := NewPriorityQueue[int]()
 
 	pq.Push(1, 1)
@@ -46,4 +46,3 @@ func Test_only_pops_items(t *testing.T){
 		t.Fatalf("Fail on %s: Pop operation did not return Nil", t.Name())
 	}
 }
-

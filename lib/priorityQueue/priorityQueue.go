@@ -1,4 +1,4 @@
-package priorityQueue 
+package priorityQueue
 
 import (
 	"container/heap"
@@ -6,15 +6,15 @@ import (
 )
 
 type Item struct {
-	value any
+	value    any
 	priority int
-	index int
+	index    int
 }
 
 type tHeap []*Item
 
 type PriorityQueue[T any] struct {
-	h tHeap
+	h      tHeap
 	length int
 }
 
@@ -25,33 +25,32 @@ func (h tHeap) Less(i int, j int) bool {
 	return h[i].priority > h[j].priority
 }
 
-func (h *tHeap) Push(x any){
+func (h *tHeap) Push(x any) {
 	n := len(*h)
-	item := x.(*Item) 
+	item := x.(*Item)
 	item.index = n
 	*h = append(*h, item)
 }
 
-func (h *tHeap) Pop() any{
+func (h *tHeap) Pop() any {
 	old := *h
 	n := len(old)
 	item := old[n-1]
-	old[n-1] = nil  // don't stop the GC from reclaiming the item eventually
-	item.priority= -1 // for safety
+	old[n-1] = nil     // don't stop the GC from reclaiming the item eventually
+	item.priority = -1 // for safety
 	*h = old[0 : n-1]
 	return item
 }
 
-func (h tHeap) Swap(i int, j int){
+func (h tHeap) Swap(i int, j int) {
 	h[i], h[j] = h[j], h[i]
 	h[i].index = i
 	h[j].index = j
 }
 
-
 // Priority Queue Functions
 
-func NewPriorityQueue[T any]() PriorityQueue[T]{
+func NewPriorityQueue[T any]() PriorityQueue[T] {
 
 	h := make(tHeap, 0)
 	heap.Init(&h)
@@ -64,35 +63,34 @@ func (np PriorityQueue[T]) Len() int {
 	return np.length
 }
 
-func (pq *PriorityQueue[T]) Push(val T, priority int){
+func (pq *PriorityQueue[T]) Push(val T, priority int) {
 	item := new(Item)
 	item.value = val
 	item.priority = priority
 	heap.Push(&pq.h, item)
-	pq.length ++
+	pq.length++
 }
 
-func (pq *PriorityQueue[T]) Pop() option.Option[T]{
-	if pq.length == 0{
+func (pq *PriorityQueue[T]) Pop() option.Option[T] {
+	if pq.length == 0 {
 		return option.OptionNil[T]()
 	}
 
 	v := heap.Pop(&pq.h).(*Item)
 
-	pq.length --
+	pq.length--
 	return option.OptionVal(v.value.(T))
-	
+
 }
 
-func (pq PriorityQueue[T]) To_list() []T{
+func (pq PriorityQueue[T]) To_list() []T {
 	res := make([]T, pq.Len())
-	
-	for i:=0; i<pq.Len(); i++ {
+
+	for i := 0; i < pq.Len(); i++ {
 		val := pq.Pop()
-		if val.GetSet(){
+		if val.GetSet() {
 			res[i] = val.GetVal()
 		}
 	}
 	return res
 }
-

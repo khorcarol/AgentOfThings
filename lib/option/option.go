@@ -1,6 +1,6 @@
-package option 
+package option
 
-type Option[T any] struct{
+type Option[T any] struct {
 	set bool
 	val T
 }
@@ -11,7 +11,7 @@ func OptionNil[T any]() Option[T] {
 	return r
 }
 
-func OptionVal[T any](val T) Option[T]{
+func OptionVal[T any](val T) Option[T] {
 	return Option[T]{true, val}
 }
 
@@ -19,6 +19,6 @@ func (o Option[T]) GetSet() bool {
 	return o.set
 }
 
-func (o Option[T]) GetVal() T{
+func (o Option[T]) GetVal() T {
 	return o.val
 }
