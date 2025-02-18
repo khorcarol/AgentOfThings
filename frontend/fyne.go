@@ -128,23 +128,16 @@ func formatInterests(interests []api.Interest) string {
 
 func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 
-	
 	usersList = widget.NewList(
 		func() int { return len(currentUsers) },
 		func() fyne.CanvasObject {
-
-            s := binding.NewString()
-            s.Set("https://go.dev/blog/go-brand/Go-Logo/JPG/Go-Logo_Blue.jpg")
-            uri, _ := binding.StringToURI(s).Get()
-
-            return container.NewHBox(
-                widget.NewLabel("User ID"),
-                layout.NewSpacer(),
-                canvas.NewImageFromURI(uri),
-
-                widget.NewButton("Learn More", nil),
-            )
-        },
+			return container.NewHBox(
+				widget.NewLabel("User ID"),
+				layout.NewSpacer(),
+				&canvas.Image{},
+				widget.NewButton("Learn More", nil),
+			)
+		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			user := currentUsers[i]
 			container := o.(*fyne.Container)
@@ -152,13 +145,16 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 			idLabel := container.Objects[0].(*widget.Label)
 			idLabel.SetText(user.UserID.Address)
 
-			
+			img := container.Objects[2].(*canvas.Image)
+			img.FillMode = canvas.ImageFillOriginal
+			img.Resource, _ = fyne.LoadResourceFromURLString("https://go.dev/blog/go-brand/Go-Logo/JPG/Go-Logo_Blue.jpg")
+			img.Refresh()
+
 			button := container.Objects[3].(*widget.Button)
 			button.OnTapped = func() {
 				Seen(user.UserID.Address)
 				showUserDetailsDialog(user, myWindow)
 			}
-
 
 		},
 	)
