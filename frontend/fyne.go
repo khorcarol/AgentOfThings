@@ -11,10 +11,13 @@ import (
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 )
 
 // Custom colors
@@ -62,27 +65,11 @@ func loadFont(path string) fyne.Resource {
 	}
 }
 
-type Interest struct {
-	Category    string
-	Description string
-}
-
-type User struct {
-	UserID          string
-	CommonInterests []Interest
-}
-
-type Friend struct {
-	User  User
-	Photo string
-	Name  string
-}
-
 var (
 	friendsList    *widget.List
 	usersList      *widget.List
-	currentFriends []Friend
-	currentUsers   []User
+	currentFriends []api.Friend
+	currentUsers   []api.User
 )
 
 func createFriendsUI() fyne.CanvasObject {
@@ -117,70 +104,82 @@ func createFriendsUI() fyne.CanvasObject {
 	return container.NewBorder(nil, nil, nil, nil, friendsList)
 }
 
-func onRefreshFriends(friends []Friend) {
+func onRefreshFriends(friends []api.Friend) {
 	currentFriends = friends
 	if friendsList != nil {
 		friendsList.Refresh()
 	}
 }
 
-func onRefreshUsers(users []User) {
+func onRefreshUsers(users []api.User) {
 	currentUsers = users
 	if usersList != nil {
 		usersList.Refresh()
 	}
 }
 
-func formatInterests(interests []Interest) string {
+func formatInterests(interests []api.Interest) string {
 	result := ""
 	for _, interest := range interests {
-		result += interest.Category + ": " + interest.Description + "\n"
+		result +=  interest.Description + "\n"
 	}
 	return result
 }
 
 func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
+
+	
 	usersList = widget.NewList(
 		func() int { return len(currentUsers) },
 		func() fyne.CanvasObject {
-			return container.NewHBox(
-				widget.NewLabel("User ID"),
-				layout.NewSpacer(),
-				widget.NewButton("Learn More", nil),
-			)
-		},
+
+            s := binding.NewString()
+            s.Set("https://go.dev/blog/go-brand/Go-Logo/JPG/Go-Logo_Blue.jpg")
+            uri, _ := binding.StringToURI(s).Get()
+
+            return container.NewHBox(
+                widget.NewLabel("User ID"),
+                layout.NewSpacer(),
+                canvas.NewImageFromURI(uri),
+
+                widget.NewButton("Learn More", nil),
+            )
+        },
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			user := currentUsers[i]
 			container := o.(*fyne.Container)
 
 			idLabel := container.Objects[0].(*widget.Label)
-			idLabel.SetText(user.UserID)
+			idLabel.SetText(user.UserID.Address)
 
-			button := container.Objects[2].(*widget.Button)
+			
+			button := container.Objects[3].(*widget.Button)
 			button.OnTapped = func() {
-				Seen(user.UserID)
+				Seen(user.UserID.Address)
 				showUserDetailsDialog(user, myWindow)
 			}
+
+
 		},
 	)
 	return container.NewBorder(nil, nil, nil, nil, usersList)
 }
 
-func showUserDetailsDialog(user User, parent fyne.Window) {
+func showUserDetailsDialog(user api.User, parent fyne.Window) {
 	content := container.NewVBox(
 		widget.NewSeparator(),
 		widget.NewLabel("Common Interests:"),
 	)
 
 	for _, interest := range user.CommonInterests {
-		content.Add(widget.NewLabel("- " + interest.Category + ": " + interest.Description))
+		content.Add(widget.NewLabel("- " + interests.String(interest.Category) + ": " + interest.Description))
 	}
 
 	var userDetailsDialog dialog.Dialog
 
 	sendBtn := widget.NewButton("Send Friend Request", func() {
-		SendFriendRequest(user.UserID)
-		dialog.ShowInformation("Request Sent", "Friend request sent to "+user.UserID, parent)
+		SendFriendRequest(user.UserID.Address)
+		dialog.ShowInformation("Request Sent", "Friend request sent to "+user.UserID.Address, parent)
 	})
 	closeBtn := widget.NewButton("Close", func() {
 		userDetailsDialog.Hide()
@@ -228,27 +227,28 @@ func Main() {
 
 	myWindow.SetContent(tabs)
 
-	onRefreshUsers([]User{
+	onRefreshUsers([]api.User{
 		{
-			UserID: "user123",
-			CommonInterests: []Interest{
-				{Category: "Sports", Description: "Basketball"},
-				{Category: "Music", Description: "Jazz"},
+			UserID: api.ID{Address: "user123"},
+			CommonInterests: []api.Interest{
+				{Category: 1, Description: "Basketball"},
+				{Category: 2, Description: "Jazz"},
 			},
+			Seen: false,
 		},
 	})
 
 	refreshButton := widget.NewButton("Refresh Users", func() {
 
-		onRefreshUsers([]User{
+		onRefreshUsers([]api.User{
 
 			{
 
-				UserID: "newUser456",
+				UserID: api.ID{Address: "newuser456"},
 
-				CommonInterests: []Interest{
+				CommonInterests: []api.Interest{
 
-					{Category: "Art", Description: "Painting"},
+					{Category: 3, Description: "Painting"},
 				},
 			},
 		})
@@ -256,11 +256,11 @@ func Main() {
 	})
 	myWindow.SetContent(container.NewVBox(tabs, refreshButton))
 
-	onRefreshFriends([]Friend{
+	onRefreshFriends([]api.Friend{
 		{
-			User: User{
-				UserID:          "123",
-				CommonInterests: []Interest{{"Sports", "Basketball"}},
+			User: api.User{
+				UserID:          api.ID{Address: "newuser456"},
+				CommonInterests: []api.Interest{{Category: 1,Description: "description", Image: "url"}},
 			},
 			Name:  "John Doe",
 			Photo: "path/to/image.jpg",
