@@ -132,31 +132,32 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 		func() fyne.CanvasObject {
 			image := &canvas.Image{}
 			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
-			return container.NewHBox(
+			return container.NewVBox(container.NewHBox(
 				widget.NewLabel("User ID"),
 				layout.NewSpacer(),
-				image,
 				widget.NewButton("Learn More", nil),
+			),
+				image,
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			user := currentUsers[i]
-			container := o.(*fyne.Container)
+			vertContainer := o.(*fyne.Container)
+			container := vertContainer.Objects[0].(*fyne.Container)
 
 			idLabel := container.Objects[0].(*widget.Label)
 			idLabel.SetText(user.UserID.Address)
 
-			img := container.Objects[2].(*canvas.Image)
-			img.FillMode = canvas.ImageFillOriginal
-			img.Resource, _ = fyne.LoadResourceFromURLString("https://go.dev/blog/go-brand/Go-Logo/JPG/Go-Logo_Blue.jpg")
-			img.Refresh()
-
-			button := container.Objects[3].(*widget.Button)
+			button := container.Objects[2].(*widget.Button)
 			button.OnTapped = func() {
 				Seen(user.UserID.Address)
 				showUserDetailsDialog(user, myWindow)
 			}
 
+			image := vertContainer.Objects[1].(*canvas.Image)
+
+			image.Resource, _ = fyne.LoadResourceFromURLString("https://go.dev/blog/go-brand/Go-Logo/JPG/Go-Logo_Blue.jpg")
+			image.FillMode = canvas.ImageFillContain
 		},
 	)
 	return container.NewBorder(nil, nil, nil, nil, usersList)
