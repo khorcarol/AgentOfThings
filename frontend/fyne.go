@@ -131,10 +131,12 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 	usersList = widget.NewList(
 		func() int { return len(currentUsers) },
 		func() fyne.CanvasObject {
+			image := &canvas.Image{}
+			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
 			return container.NewHBox(
 				widget.NewLabel("User ID"),
 				layout.NewSpacer(),
-				&canvas.Image{},
+				image,
 				widget.NewButton("Learn More", nil),
 			)
 		},
