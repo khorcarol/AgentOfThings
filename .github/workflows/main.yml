@@ -60,7 +60,7 @@ jobs:
 
       - name: Reformat Code
         run: |
-          gofmt ./...
+          go fmt ./...
 
   test:
     name: Run Go Tests
