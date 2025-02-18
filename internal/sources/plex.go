@@ -16,8 +16,10 @@ import (
 func GetPlexInterests() []api.Interest {
 	ctx := context.Background()
 
+	server_url := "http://localhost:32400"
+
 	s := plexgo.New(
-		plexgo.WithServerURL("http://localhost:32400"),
+		plexgo.WithServerURL(server_url),
 	)
 
 	res, err := s.Sessions.GetSessionHistory(ctx, nil, nil, nil, nil)
@@ -25,10 +27,25 @@ func GetPlexInterests() []api.Interest {
 		fmt.Fprintln(os.Stderr, "Unable to connect to plex instance")
 	}
 	if res != nil && res.Object != nil {
-		interests := make([]api.Interest, *res.Object.MediaContainer.Size)
+		var interests []api.Interest
 
-		for i, media := range res.Object.MediaContainer.Metadata {
-			interests[i] = api.Interest{Category: FilmTV, Description: *media.Title}
+		interests_contained := map[string]bool{}
+
+		for _, media := range res.Object.MediaContainer.Metadata {
+			var image_url *string
+			if media.Thumb != nil {
+				thumbnail_url := server_url + *media.Thumb
+				image_url = &thumbnail_url
+			}
+			if media.Key != nil && !interests_contained[*media.Key] {
+				interests_contained[*media.Key] = true
+
+				interests = append(interests, api.Interest{
+					Category:    FilmTV,
+					Description: *media.Title,
+					Image:       image_url,
+				})
+			}
 		}
 
 		return interests
