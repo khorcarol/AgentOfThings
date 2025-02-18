@@ -22,7 +22,7 @@ func scoreUser(user api.User) int{
 
 func rankUsers() []api.User{
 
-	pq := priorityQueue.NewPriorityQueue[api.User](len(users))
+	pq := priorityQueue.NewPriorityQueue[api.User]()
 
 
 	for id, user := range users {
