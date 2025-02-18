@@ -25,10 +25,19 @@ func GetPlexInterests() []api.Interest {
 		fmt.Fprintln(os.Stderr, "Unable to connect to plex instance")
 	}
 	if res != nil && res.Object != nil {
-		interests := make([]api.Interest, *res.Object.MediaContainer.Size)
+		var interests []api.Interest
 
-		for i, media := range res.Object.MediaContainer.Metadata {
-			interests[i] = api.Interest{Category: FilmTV, Description: *media.Title}
+		interests_contained := map[string]bool{}
+
+		for _, media := range res.Object.MediaContainer.Metadata {
+			if media.Key != nil && !interests_contained[*media.Key] {
+				interests_contained[*media.Key] = true
+
+				interests = append(interests, api.Interest{
+					Category:    FilmTV,
+					Description: *media.Title,
+				})
+			}
 		}
 
 		return interests
