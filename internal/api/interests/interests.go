@@ -8,3 +8,16 @@ const (
 	FilmTV
 	Books
 )
+
+
+
+var stateName = map[InterestCategory]string{
+    Sport:      "Sport",
+    Music: "Music",
+    FilmTV:     "FilmTV",
+    Books:  "Books",
+}
+
+func String(ic InterestCategory) string{
+	return stateName[ic]
+}

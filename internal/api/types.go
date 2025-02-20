@@ -18,11 +18,11 @@ type User struct {
 
 // A [Friend] is a [User] who we have requested to be friends with, and who has also requested to be friends with us.
 type Friend struct {
-	user  User
+	User  User
 	Photo string
 	Name  string
 }
 
 type ID struct {
-	address string
+	Address string
 }
