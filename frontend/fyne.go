@@ -248,7 +248,7 @@ func Main() {
 		{
 			User: api.User{
 				UserID:          api.ID{Address: "newuser456"},
-				CommonInterests: []api.Interest{{Category: 1, Description: "description", Image: "url"}},
+				CommonInterests: []api.Interest{{Category: 1, Description: "description"}},
 			},
 			Name:  "John Doe",
 			Photo: "path/to/image.jpg",
