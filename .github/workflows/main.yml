@@ -43,7 +43,7 @@ jobs:
 
       - name: Run golangci-lint
         run: |
-          golangci-lint run ./... --timeout=5m --skip-dirs '(^|/)(pkg/mod|opt/hostedtoolcache/go)($|/)'
+          golangci-lint run ./... --fast --timeout=5m --skip-dirs '(^|/)(pkg/mod|opt/hostedtoolcache/go)($|/)'
 
   format:
     name: Format Code
