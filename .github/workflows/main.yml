@@ -26,15 +26,6 @@ jobs:
           go mod tidy
           go mod download
 
-      - name: Cache golangci-lint
-        id: golangci-lint-cache
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/golangci-lint
-          key: ${{ runner.os }}-golangci-lint-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-golangci-lint-
-
       - name: Install golangci-lint
         if: steps.golangci-lint-cache.outputs.cache-hit != 'true'
         run: |
