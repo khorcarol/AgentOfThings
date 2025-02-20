@@ -7,6 +7,7 @@ import (
 import priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 
 var users = make(map[api.ID]api.User)
+var friend_requests = make(map[api.ID]api.User)
 var friends = make(map[api.ID]api.User)
 
 // Assigns a score to a user, based on number of matches

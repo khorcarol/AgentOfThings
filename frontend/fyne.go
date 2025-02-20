@@ -17,6 +17,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
+	"github.com/khorcarol/AgentOfThings/internal/middle"
 )
 
 // Custom colors
@@ -150,7 +151,7 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 
 			button := container.Objects[2].(*widget.Button)
 			button.OnTapped = func() {
-				Seen(user.UserID.Address)
+				middle.Seen(user.UserID)
 				showUserDetailsDialog(user, myWindow)
 			}
 
@@ -176,7 +177,7 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 	var userDetailsDialog dialog.Dialog
 
 	sendBtn := widget.NewButton("Send Friend Request", func() {
-		SendFriendRequest(user.UserID.Address)
+		middle.SendFriendRequest(user.UserID)
 		dialog.ShowInformation("Request Sent", "Friend request sent to "+user.UserID.Address, parent)
 	})
 	closeBtn := widget.NewButton("Close", func() {
@@ -196,13 +197,6 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 	userDetailsDialog.Show()
 }
 
-func Seen(userID string) {
-	println("Marking user as seen:", userID)
-}
-
-func SendFriendRequest(userID string) {
-	println("Sending friend request to:", userID)
-}
 
 func Main() {
 	regularFont := loadFont("./frontend/Inter_24pt-Bold.ttf")
