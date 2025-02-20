@@ -120,7 +120,7 @@ func onRefreshUsers(users []api.User) {
 func formatInterests(interests []api.Interest) string {
 	result := ""
 	for _, interest := range interests {
-		result +=  interest.Description + "\n"
+		result += interest.Description + "\n"
 	}
 	return result
 }
@@ -234,31 +234,21 @@ func Main() {
 			},
 			Seen: false,
 		},
-	})
-
-	refreshButton := widget.NewButton("Refresh Users", func() {
-
-		onRefreshUsers([]api.User{
-
-			{
-
-				UserID: api.ID{Address: "newuser456"},
-
-				CommonInterests: []api.Interest{
-
-					{Category: 3, Description: "Painting"},
-				},
+		{
+			UserID: api.ID{Address: "user123"},
+			CommonInterests: []api.Interest{
+				{Category: 1, Description: "Basketball"},
+				{Category: 2, Description: "Jazz"},
 			},
-		})
-
+			Seen: false,
+		},
 	})
-	myWindow.SetContent(container.NewVBox(tabs, refreshButton))
 
 	onRefreshFriends([]api.Friend{
 		{
 			User: api.User{
 				UserID:          api.ID{Address: "newuser456"},
-				CommonInterests: []api.Interest{{Category: 1,Description: "description", Image: "url"}},
+				CommonInterests: []api.Interest{{Category: 1, Description: "description", Image: "url"}},
 			},
 			Name:  "John Doe",
 			Photo: "path/to/image.jpg",

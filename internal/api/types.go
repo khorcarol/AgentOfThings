@@ -6,7 +6,7 @@ import "github.com/khorcarol/AgentOfThings/internal/api/interests"
 type Interest struct {
 	Category    interests.InterestCategory
 	Description string
-	Image       *string
+	Image       string
 }
 
 // A [User] is a peer whose interests we have discovered.
