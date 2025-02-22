@@ -6,7 +6,7 @@ import (
 
 // A collection of functions to be used by the front end
 func Seen(userID api.ID) {
-	SetUserSeen(userID, true)
+	setUserSeen(userID, true)
 }
 
 func SendFriendRequest(userID api.ID) {

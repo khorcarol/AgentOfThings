@@ -19,6 +19,7 @@ func scoreUser(user api.User) int {
 	return score
 }
 
+// Returns a list of users in order of their score
 func rankUsers() []api.User {
 
 	pq := priorityQueue.NewPriorityQueue[api.User]()
@@ -36,7 +37,8 @@ func rankUsers() []api.User {
 	return pq.To_list()
 }
 
-func SetUserSeen(id api.ID, val bool) {
+// Sets the user to seen
+func setUserSeen(id api.ID, val bool) {
 	u, t := users[id]
 	if t {
 		u.Seen = val
