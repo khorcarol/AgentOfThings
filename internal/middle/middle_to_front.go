@@ -2,6 +2,7 @@ package middle
 
 import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/internal/connection"
 )
 
 // A collection of functions to be used by the front end
@@ -19,5 +20,13 @@ func SendFriendRequest(userID api.ID) {
 	delete(users, userID)
 	friend_requests[userID] = user
 
-	// TODO: send user along backend channel
+	connection.FriendRequestChannel <- user
+}
+
+// Respond to external friend request
+func ExtFriendResponse(userID api.ID, accept bool){
+	// TODO: Respond with personal data
+	// TODO: Get personal data
+	//resp := api.FriendResponse{userID, accept, }
+	//connection.ExtFriendResponseChannel <- resp
 }

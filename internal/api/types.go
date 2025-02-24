@@ -1,6 +1,8 @@
 package api
 
-import "github.com/khorcarol/AgentOfThings/internal/api/interests"
+import (
+	"github.com/khorcarol/AgentOfThings/internal/api/interests"
+)
 
 // A [interests.InterestCategory] and a string to represent the data.
 type Interest struct {
@@ -25,4 +27,11 @@ type Friend struct {
 
 type ID struct {
 	Address string
+}
+
+// Response to an external friend request 
+type FriendResponse struct {
+	UserID ID      // The peer to respond to
+	Accept bool	   
+	Data   Friend
 }
