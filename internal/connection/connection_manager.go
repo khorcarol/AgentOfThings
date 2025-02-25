@@ -23,12 +23,16 @@ type ConnectionManager struct {
 
 func (cmgr *ConnectionManager) peerDisconnectWrapper() func(network.Network, network.Conn) {
 	return func(n network.Network, c network.Conn) {
+		cmgr.peersMutex.Lock()
+		defer cmgr.peersMutex.Unlock()
 		delete(cmgr.connectedPeers, c.RemotePeer())
 	}
 }
 
 func (cmgr *ConnectionManager) peerConnectWrapper() func(network.Network, network.Conn) {
 	return func(n network.Network, c network.Conn) {
+		cmgr.peersMutex.Lock()
+		defer cmgr.peersMutex.Unlock()
 		cmgr.connectedPeers[c.RemotePeer()] = struct{}{}
 	}
 }
