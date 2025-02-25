@@ -10,10 +10,21 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 )
 
+var plexSourceName = "plex"
+
 // Fetches session history and writes recently viewed films to a slice of interests.
 //
 // Requires a local plex instance
 func GetPlexInterests() []api.Interest {
+	cached := getCachedSourceInterests(plexSourceName)
+
+	if cached != nil {
+		println("Using cached plex data")
+		return *cached
+	} else {
+		println("No cached plex data available")
+	}
+
 	ctx := context.Background()
 
 	server_url := "http://localhost:32400"
@@ -46,6 +57,12 @@ func GetPlexInterests() []api.Interest {
 					Image:       image_url,
 				})
 			}
+		}
+
+		err = cacheSourceInterests(plex_interests, plexSourceName)
+		if err != nil {
+			println("Failed caching plex data")
+			println(err.Error())
 		}
 
 		return plex_interests
