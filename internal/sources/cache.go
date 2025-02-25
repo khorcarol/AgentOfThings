@@ -2,6 +2,8 @@ package sources
 
 import (
 	"encoding/json"
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 
@@ -27,6 +29,16 @@ func cacheSourceInterests(interests []api.Interest, sourceName string) error {
 
 	data, err := json.Marshal(interests)
 	if err != nil {
+		return err
+	}
+
+	_, err = os.Stat(filepath.Dir(path))
+	if errors.Is(err, fs.ErrNotExist) {
+		err = os.MkdirAll(filepath.Dir(path), 0755)
+		if err != nil {
+			return err
+		}
+	} else {
 		return err
 	}
 
