@@ -6,22 +6,20 @@ import (
 
 var (
 	// B->M, sends a new discovered user
-	NewUserChannel           chan api.User   = make(chan api.User)
-
-	// M->B, sends a friend request to be made
-	FriendRequestChannel     chan api.User = make(chan api.User)
+	IncomingUsers    chan api.User   = make(chan api.User)
 
 	// B->M, sends the response to the fried request (potentially with data)
-	FriendResponseChannel    chan api.FriendResponse = make(chan api.FriendResponse)
+	IncomingFriendResponse chan api.FriendResponse = make(chan api.FriendResponse)
 
 	// B->M, sends an external friend request to respond to
-	ExtFriendRequestChannel  chan api.ID = make(chan api.ID)
-
-	// M->B, sends the response to the external friend request
-	ExtFriendResponseChannel chan api.FriendResponse = make(chan api.FriendResponse)
+	IncomingFriendRequest chan api.Friend = make(chan api.Friend)
 )
 
-func RequestFriend(user api.User, data api.Friend) (success bool, receiptData api.Friend) {
+func SendFriendRequest(user api.User, data api.Friend) (error) {
 	// start a new stream with friend request protocol
-	return false, api.Friend{}
+	return nil
+}
+
+func SendFriendResponse(user api.User, data api.FriendResponse) (error) {
+	return nil
 }
