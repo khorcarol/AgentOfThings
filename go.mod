@@ -5,6 +5,7 @@ go 1.23.6
 require (
 	fyne.io/fyne/v2 v2.5.4
 	github.com/LukeHagar/plexgo v0.19.0
+	github.com/google/uuid v1.6.0
 	github.com/libp2p/go-libp2p v0.38.2
 )
 
@@ -38,7 +39,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/pprof v0.0.0-20241210010833-40e02aabc2ad // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
 	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/huin/goupnp v1.3.0 // indirect
