@@ -12,8 +12,8 @@ import (
 )
 
 const (
-	appConfigDirName = "AgentOfThings"
-	uuidFileName     = "uuid.json"
+	appCacheDirName = "AgentOfThings"
+	uuidFileName    = "uuid.json"
 )
 
 type uuidConfig struct {
@@ -37,15 +37,15 @@ func GetUUID() (uuid.UUID, error) {
 	return cachedUUID, initErr
 }
 
-// getUUIDInternal reads the UUID from the configuration file, or creates one if not found.
+// getUUIDInternal reads the UUID from the appdata cache file, or creates a cache file if not found.
 func getUUIDInternal() (uuid.UUID, error) {
 	// Obtain the platform-specific configuration directory.
-	configDir, err := os.UserConfigDir()
+	cacheDir, err := os.UserCacheDir()
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("failed to get user config dir: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to get user cache dir: %w", err)
 	}
 
-	appConfigPath := filepath.Join(configDir, appConfigDirName)
+	appConfigPath := filepath.Join(cacheDir, appCacheDirName)
 	uuidFilePath := filepath.Join(appConfigPath, uuidFileName)
 
 	if info, err := os.Stat(uuidFilePath); err == nil && !info.IsDir() {
