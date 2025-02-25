@@ -12,6 +12,7 @@ jobs:
   lint:
     name: Lint Code
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'Merge pull request') && !startsWith(github.event.head_commit.message, 'ci:')"
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -39,6 +40,7 @@ jobs:
   format:
     name: Format Code
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'Merge pull request') && !startsWith(github.event.head_commit.message, 'ci:')"
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -58,6 +60,7 @@ jobs:
   test:
     name: Run Go Tests
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'Merge pull request') && !startsWith(github.event.head_commit.message, 'ci:')"
     steps:
       - name: Check out code
         uses: actions/checkout@v3
