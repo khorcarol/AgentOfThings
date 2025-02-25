@@ -28,7 +28,7 @@
 ## Data between Middle to Front
 ### Main Page
 - Common interests
-    - Catagory
+    - Category
         - Films/TV
         - Music
         - Sports
@@ -68,7 +68,7 @@ func sendFriendRequest(userid UserID){
 
 }
 
-//Middle calls Front implemnets
+//Middle calls Front implements
 
 func onRefreshFriends(friends []Friend){
 	//refreshes friend UI
