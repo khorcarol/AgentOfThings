@@ -5,6 +5,11 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/connection"
 )
 
+func CommonInterests(api.User) []api.Interest{
+	// TODO: Find common interests
+	return make([]api.Interest, 0)
+}
+
 // A collection of functions to be used by the front end
 func Seen(userID api.ID) {
 	setUserSeen(userID, true)
@@ -17,10 +22,11 @@ func SendFriendRequest(userID api.ID) {
 		return
 	}
 
+	data := getPersonalData()
+	connection.SendFriendRequest(user, data)
+
 	delete(users, userID)
 	friend_requests[userID] = user
-
-	connection.FriendRequestChannel <- user
 }
 
 // Respond to external friend request

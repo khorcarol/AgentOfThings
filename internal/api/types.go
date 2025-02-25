@@ -14,7 +14,7 @@ type Interest struct {
 // A [User] is a peer whose interests we have discovered.
 type User struct {
 	UserID          ID
-	CommonInterests []Interest
+	Interests []Interest
 	Seen            bool
 }
 
@@ -35,3 +35,4 @@ type FriendResponse struct {
 	Accept bool	   
 	Data   Friend
 }
+

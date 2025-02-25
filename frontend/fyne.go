@@ -97,7 +97,7 @@ func createFriendsUI() fyne.CanvasObject {
 			nameLabel.SetText(friend.Name)
 
 			interestsLabel := details.Objects[1].(*widget.Label)
-			interestsLabel.SetText(formatInterests(friend.User.CommonInterests))
+			interestsLabel.SetText(formatInterests(middle.CommonInterests(friend.User)))
 		},
 	)
 
@@ -170,7 +170,7 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 		widget.NewLabel("Common Interests:"),
 	)
 
-	for _, interest := range user.CommonInterests {
+	for _, interest := range middle.CommonInterests(user){
 		content.Add(widget.NewLabel("- " + interests.String(interest.Category) + ": " + interest.Description))
 	}
 
@@ -222,7 +222,7 @@ func Main() {
 	onRefreshUsers([]api.User{
 		{
 			UserID: api.ID{Address: "user123"},
-			CommonInterests: []api.Interest{
+			Interests: []api.Interest{
 				{Category: 1, Description: "Basketball"},
 				{Category: 2, Description: "Jazz"},
 			},
@@ -230,7 +230,7 @@ func Main() {
 		},
 		{
 			UserID: api.ID{Address: "user123"},
-			CommonInterests: []api.Interest{
+			Interests: []api.Interest{
 				{Category: 1, Description: "Basketball"},
 				{Category: 2, Description: "Jazz"},
 			},
@@ -242,7 +242,7 @@ func Main() {
 		{
 			User: api.User{
 				UserID:          api.ID{Address: "newuser456"},
-				CommonInterests: []api.Interest{{Category: 1, Description: "description"}},
+				Interests: []api.Interest{{Category: 1, Description: "description"}},
 			},
 			Name:  "John Doe",
 			Photo: "path/to/image.jpg",

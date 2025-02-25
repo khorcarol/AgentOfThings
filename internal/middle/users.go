@@ -12,9 +12,14 @@ var friend_requests = make(map[api.ID]api.User)
 var ext_friend_requests = make(map[api.ID]api.User)
 var friends = make(map[api.ID]api.Friend)
 
+func getPersonalData() api.Friend {
+	// TODO: Finish function
+	return api.Friend{User: api.User{}, Photo:"", Name:""}
+}
+
 // Assigns a score to a user, based on number of matches
 func scoreUser(user api.User) int {
-	var score = len(user.CommonInterests)
+	var score = len(user.Interests)
 	if user.Seen {
 		score -= 100
 	}
@@ -50,13 +55,14 @@ func setUserSeen(id api.ID, val bool) {
 
 // Adds a new user to users 
 func discoverUser(){
-	user := <- connection.NewUserChannel
+	user := <- connection.IncomingUsers
 	users[user.UserID] = user
+	// TODO: find common interests
 }
 
 // Recieve response from (our) sent friend request
 func friendResonse(){
-	friend_res := <- connection.FriendResponseChannel
+	friend_res := <- connection.IncomingFriendResponse
 	if friend_res.Accept{
 		friends[friend_res.UserID] = friend_res.Data
 	} else {
@@ -67,8 +73,5 @@ func friendResonse(){
 
 // Recieve a friend request from another user
 func extFriendRequest(){
-	fr := <- connection.ExtFriendRequestChannel
-	ext_friend_requests[fr] = users[fr]
-
 	// TODO: Finish external friend requests
 }
