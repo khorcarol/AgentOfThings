@@ -91,6 +91,8 @@ func (service *HandshakeService) InitiateHandshake(ctx context.Context, remote p
 
 // handshakeHandler is invoked when a remote peer connects.
 // It decodes the remote’s handshake message and responds with our interests.
+
+// TODO: check if we are already identified with the peer?
 func (service *HandshakeService) handshakeHandler(stream network.Stream) {
 	defer stream.Close()
 
@@ -100,7 +102,7 @@ func (service *HandshakeService) handshakeHandler(stream network.Stream) {
 		return
 	}
 
-	// TODO: write remoteMessage to some channel to get the data to the backend
+	// TODO: write remoteMessage to some channel to get the data to the backend (maybe a function instead?)
 	var remoteMessage HandshakeMessage
 	if err := decodeFromStream(stream, &remoteMessage); err != nil {
 		log.Printf("handshake: failed to decode remote handshake message: %v", err)
