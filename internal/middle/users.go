@@ -2,13 +2,34 @@ package middle
 
 import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
-)
+	"github.com/khorcarol/AgentOfThings/internal/storage"
 
-import priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
+	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
+)
 
 var users = make(map[api.ID]api.User)
 var friend_requests = make(map[api.ID]api.User)
 var friends = make(map[api.ID]api.User)
+
+// Retrieve friends from storage
+func init() {
+	loadedFriends, err := storage.LoadFriends()
+	if err != nil {
+		// Load fails -> use empty map
+		friends = make(map[api.ID]api.User)
+	} else {
+		friends = loadedFriends
+	}
+}
+
+func saveFriends() {
+	_ = storage.SaveFriends(friends)
+}
+
+func AddFriend(id api.ID, user api.User) {
+	friends[id] = user
+	saveFriends()
+}
 
 // Assigns a score to a user, based on number of matches
 func scoreUser(user api.User) int {
