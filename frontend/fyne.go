@@ -1,11 +1,10 @@
+//go:generate fyne bundle -o bundled.go --package frontend Inter_24pt-Bold.ttf
+
 package frontend
 
 import (
 	// "time"
 	"image/color"
-	"log"
-	"os"
-	"path/filepath"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -50,18 +49,6 @@ func (c *customTheme) Color(name fyne.ThemeColorName, _ fyne.ThemeVariant) color
 		return c.backgroundColor
 	default:
 		return theme.DefaultTheme().Color(name, theme.VariantLight)
-	}
-}
-
-// Load font from file
-func loadFont(path string) fyne.Resource {
-	fontData, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatalf("Failed to load font: %v", err)
-	}
-	return &fyne.StaticResource{
-		StaticName:    filepath.Base(path),
-		StaticContent: fontData,
 	}
 }
 
@@ -199,7 +186,7 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 
 
 func Main() {
-	regularFont := loadFont("./frontend/Inter_24pt-Bold.ttf")
+	regularFont := resourceInter24ptBoldTtf
 
 	myApp := app.New()
 	myWindow := myApp.NewWindow("Agent of Friends")
