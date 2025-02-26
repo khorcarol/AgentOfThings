@@ -1,11 +1,13 @@
 package middle
 
 import (
+	"log"
+
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
 )
 
-func CommonInterests(api.User) []api.Interest{
+func CommonInterests(api.User) []api.Interest {
 	// TODO: Find common interests
 	return make([]api.Interest, 0)
 }
@@ -17,22 +19,26 @@ func Seen(userID api.ID) {
 
 func SendFriendRequest(userID api.ID) {
 	user, ok := users[userID]
-	if (!ok){
+	if !ok {
 		// TODO: Make Error
 		return
 	}
 
 	data := getPersonalData()
-	connection.SendFriendRequest(user, data)
+	cmgr, err := connection.GetCMGR()
+	if err != nil {
+		log.Fatal(err)
+	}
+	cmgr.SendFriendRequest(user, data)
 
 	delete(users, userID)
 	friend_requests[userID] = user
 }
 
 // Respond to external friend request
-func ExtFriendResponse(userID api.ID, accept bool){
+func ExtFriendResponse(userID api.ID, accept bool) {
 	// TODO: Respond with personal data
 	// TODO: Get personal data
-	//resp := api.FriendResponse{userID, accept, }
-	//connection.ExtFriendResponseChannel <- resp
+	// resp := api.FriendResponse{userID, accept, }
+	// connection.ExtFriendResponseChannel <- resp
 }

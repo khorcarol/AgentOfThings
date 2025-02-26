@@ -1,25 +1,29 @@
 package middle
 
 import (
+	"log"
+
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
+
+	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 )
 
-import priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
-
-var users = make(map[api.ID]api.User)
-var friend_requests = make(map[api.ID]api.User)
-var ext_friend_requests = make(map[api.ID]api.User)
-var friends = make(map[api.ID]api.Friend)
+var (
+	users               = make(map[api.ID]api.User)
+	friend_requests     = make(map[api.ID]api.User)
+	ext_friend_requests = make(map[api.ID]api.User)
+	friends             = make(map[api.ID]api.Friend)
+)
 
 func getPersonalData() api.Friend {
 	// TODO: Finish function
-	return api.Friend{User: api.User{}, Photo:"", Name:""}
+	return api.Friend{User: api.User{}, Photo: "", Name: ""}
 }
 
 // Assigns a score to a user, based on number of matches
 func scoreUser(user api.User) int {
-	var score = len(user.Interests)
+	score := len(user.Interests)
 	if user.Seen {
 		score -= 100
 	}
@@ -28,7 +32,6 @@ func scoreUser(user api.User) int {
 
 // Returns a list of users in order of their score
 func rankUsers() []api.User {
-
 	pq := priorityQueue.NewPriorityQueue[api.User]()
 
 	for id, user := range users {
@@ -53,17 +56,25 @@ func setUserSeen(id api.ID, val bool) {
 	}
 }
 
-// Adds a new user to users 
-func discoverUser(){
-	user := <- connection.IncomingUsers
+// Adds a new user to users
+func discoverUser() {
+	cmgr, err := connection.GetCMGR()
+	if err != nil {
+		log.Fatal(err)
+	}
+	user := <-cmgr.IncomingUsers
 	users[user.UserID] = user
 	// TODO: find common interests
 }
 
 // Recieve response from (our) sent friend request
-func friendResonse(){
-	friend_res := <- connection.IncomingFriendResponse
-	if friend_res.Accept{
+func friendResonse() {
+	cmgr, err := connection.GetCMGR()
+	if err != nil {
+		log.Fatal(err)
+	}
+	friend_res := <-cmgr.IncomingFriendResponse
+	if friend_res.Accept {
 		friends[friend_res.UserID] = friend_res.Data
 	} else {
 		// TODO: Inform user that friend request has been rejected
@@ -72,6 +83,6 @@ func friendResonse(){
 }
 
 // Recieve a friend request from another user
-func extFriendRequest(){
+func extFriendRequest() {
 	// TODO: Finish external friend requests
 }
