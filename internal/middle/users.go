@@ -16,7 +16,7 @@ var (
 	friend_requests     = make(map[api.ID]api.User)
 	ext_friend_requests = make(map[api.ID]api.User)
 	friends             = make(map[api.ID]api.Friend)
-	self api.Friend
+	self                api.Friend
 )
 
 func init() {
@@ -25,12 +25,12 @@ func init() {
 
 func UpdatePersonalData() {
 	// Get interests
-	uuid, _:= GetUUID()
-	id := api.ID{Address:uuid}
+	uuid, _ := GetUUID()
+	id := api.ID{Address: uuid}
 	interests := sources.GetInterests()
-	us := api.User{UserID:id, Interests:interests, Seen:false}
+	us := api.User{UserID: id, Interests: interests, Seen: false}
 
-	self = api.Friend{User: us, Photo:personal.GetPicture(), Name:personal.GetName()}
+	self = api.Friend{User: us, Photo: personal.GetPicture(), Name: personal.GetName()}
 }
 
 // Assigns a score to a user, based on number of matches

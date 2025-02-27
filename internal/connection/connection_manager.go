@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection/discovery"
 	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/handshake/peer_to_user"
@@ -30,7 +31,7 @@ type ConnectionManager struct {
 	host           host.Host
 	peersMutex     sync.Mutex
 	connectedPeers map[peer.ID]peerLevel
-	uuids          map[string]peer.ID
+	uuids          map[uuid.UUID]peer.ID
 
 	Self api.User
 	// B->M, sends a new discovered user

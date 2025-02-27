@@ -1,7 +1,6 @@
 package personal
 
-import (
-)
+import ()
 
 // TODO: Load picture
 func GetPicture() string {

@@ -10,6 +10,5 @@ func GetInterests() []api.Interest {
 	// Add new sources below
 	interests = append(interests, getPlexInterests()...)
 
-
 	return interests
 }
