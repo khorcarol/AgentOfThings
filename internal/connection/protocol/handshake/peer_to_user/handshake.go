@@ -15,7 +15,6 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
-	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 )
 
 const (
@@ -24,29 +23,11 @@ const (
 	HandshakeProtocolID = "agentofthings/peer_to_user_handshake/0.0.1"
 )
 
-// HandshakeMessage represents the message exchanged during a handshake.
-// It contains a slice of Interests (from our internal API package).
-type HandshakeMessage struct {
-	Interests []*api.Interest `json:"interests"`
-}
-
-// HandshakeService encapsulates the host for the handshake protocol.
-type HandshakeService struct {
-	Host host.Host
-}
-
-// NewHandshakeService creates a new handshake service and registers the stream handler.
-func NewHandshakeService(host host.Host) *HandshakeService {
-	service := &HandshakeService{Host: host}
-	host.SetStreamHandler(protocol.ID(HandshakeProtocolID), service.handshakeHandler)
-	return service
-}
-
 // InitiateHandshake dials a remote peer, sends our interests (as a JSON HandshakeMessage),
 // half-closes the write side, then waits for a response.
 // It returns the remote peer’s handshake message on success.
-func (service *HandshakeService) InitiateHandshake(ctx context.Context, remote peer.ID) (*HandshakeMessage, error) {
-	stream, err := service.Host.NewStream(ctx, remote, protocol.ID(HandshakeProtocolID))
+func InitiateHandshake(host host.Host, ctx context.Context, remote peer.ID, usr api.User) (*api.User, error) {
+	stream, err := host.NewStream(ctx, remote, protocol.ID(HandshakeProtocolID))
 	if err != nil {
 		return nil, fmt.Errorf("handshake: failed to open stream to peer %s: %w", remote, err)
 	}
@@ -60,13 +41,12 @@ func (service *HandshakeService) InitiateHandshake(ctx context.Context, remote p
 		log.Printf("handshake: setting deadline failed: %v", err)
 	}
 
-	ourMessage := getLocalHandshakeMessage()
-	if len(ourMessage.Interests) > maxInterests {
-		ourMessage.Interests = ourMessage.Interests[:maxInterests]
+	if len(usr.Interests) > maxInterests {
+		usr.Interests = usr.Interests[:maxInterests]
 	}
 
 	// Send our interests initially.
-	if err := encodeToStream(stream, ourMessage); err != nil {
+	if err := encodeToStream(stream, usr); err != nil {
 		stream.Reset()
 		return nil, fmt.Errorf("handshake: failed to encode our handshake message: %w", err)
 	}
@@ -78,9 +58,9 @@ func (service *HandshakeService) InitiateHandshake(ctx context.Context, remote p
 		}
 	}
 
-	log.Printf("handshake: sent our handshake message: %+v", ourMessage)
+	log.Printf("handshake: sent our handshake message: %+v", usr)
 
-	var remoteMessage HandshakeMessage
+	var remoteMessage api.User
 	if err := decodeFromStream(stream, &remoteMessage); err != nil {
 		stream.Reset()
 		return nil, fmt.Errorf("handshake: failed to decode remote handshake message: %w", err)
@@ -91,9 +71,7 @@ func (service *HandshakeService) InitiateHandshake(ctx context.Context, remote p
 
 // handshakeHandler is invoked when a remote peer connects.
 // It decodes the remote’s handshake message and responds with our interests.
-
-// TODO: check if we are already identified with the peer?
-func (service *HandshakeService) handshakeHandler(stream network.Stream) {
+func HandshakeHandler(stream network.Stream, callback func(*api.User, peer.ID), toSend *api.User) {
 	defer stream.Close()
 
 	if err := stream.SetDeadline(time.Now().Add(HandshakeTimeout)); err != nil {
@@ -102,8 +80,7 @@ func (service *HandshakeService) handshakeHandler(stream network.Stream) {
 		return
 	}
 
-	// TODO: write remoteMessage to some channel to get the data to the backend (maybe a function instead?)
-	var remoteMessage HandshakeMessage
+	var remoteMessage api.User
 	if err := decodeFromStream(stream, &remoteMessage); err != nil {
 		log.Printf("handshake: failed to decode remote handshake message: %v", err)
 		stream.Reset()
@@ -111,7 +88,7 @@ func (service *HandshakeService) handshakeHandler(stream network.Stream) {
 	}
 	log.Printf("handshake: received handshake message from peer: %+v", &remoteMessage)
 
-	ourMessage := getLocalHandshakeMessage()
+	ourMessage := *toSend
 	if len(ourMessage.Interests) > maxInterests {
 		ourMessage.Interests = ourMessage.Interests[:maxInterests]
 	}
@@ -129,10 +106,11 @@ func (service *HandshakeService) handshakeHandler(stream network.Stream) {
 		}
 	}
 	log.Printf("handshake: sent our handshake message: %+v", ourMessage)
+	callback(&remoteMessage, stream.Conn().RemotePeer())
 }
 
 // encodeToStream marshals the given message to JSON with a length prefix and writes it to w.
-func encodeToStream(writer io.Writer, message interface{}) error {
+func encodeToStream(writer io.Writer, message any) error {
 	data, err := json.Marshal(message)
 	if err != nil {
 		return err
@@ -146,7 +124,7 @@ func encodeToStream(writer io.Writer, message interface{}) error {
 }
 
 // decodeFromStream reads a length-prefixed JSON message from r into the provided message.
-func decodeFromStream(reader io.Reader, message interface{}) error {
+func decodeFromStream(reader io.Reader, message any) error {
 	var length uint32
 	if err := binary.Read(reader, binary.LittleEndian, &length); err != nil {
 		return err
@@ -160,20 +138,4 @@ func decodeFromStream(reader io.Reader, message interface{}) error {
 
 func ShouldInitiate(localPeerID, remotePeerID peer.ID) bool {
 	return localPeerID.String() < remotePeerID.String()
-}
-
-// Just a silly stub for now.
-func getLocalHandshakeMessage() *HandshakeMessage {
-	return &HandshakeMessage{
-		Interests: []*api.Interest{
-			{
-				Category:    interests.Sport,
-				Description: "RTS, CTS, ACK Bryan grrrrrrrr",
-			},
-			{
-				Category:    interests.Music,
-				Description: "Jazz and classical tunes.",
-			},
-		},
-	}
 }

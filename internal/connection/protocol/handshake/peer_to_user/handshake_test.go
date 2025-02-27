@@ -45,8 +45,8 @@ func (ds *DummyStream) CloseWrite() error {
 // TestEncodeDecode verifies that we can encode a handshake message to a stream
 // and then decode it back.
 func TestEncodeDecode(t *testing.T) {
-	origMsg := &HandshakeMessage{
-		Interests: []*api.Interest{
+	origMsg := &api.User{
+		Interests: []api.Interest{
 			{
 				Category:    interests.Sport,
 				Description: "Test interest",
@@ -59,7 +59,7 @@ func TestEncodeDecode(t *testing.T) {
 		t.Fatalf("encodeToStream failed: %v", err)
 	}
 
-	var decodedMsg HandshakeMessage
+	var decodedMsg api.User
 	if err := decodeFromStream(&buf, &decodedMsg); err != nil {
 		t.Fatalf("decodeFromStream failed: %v", err)
 	}
