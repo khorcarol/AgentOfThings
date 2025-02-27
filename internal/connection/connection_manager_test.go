@@ -7,11 +7,11 @@ import (
 )
 
 func TestCanConnect(t *testing.T) {
-	cmgr1, err := InitConnectionManager()
+	cmgr1, err := initConnectionManager()
 	if err != nil {
 		t.Errorf("Failed with error %s", err)
 	}
-	cmgr2, err := InitConnectionManager()
+	cmgr2, err := initConnectionManager()
 	if err != nil {
 		t.Errorf("Failed with error %s", err)
 	}
