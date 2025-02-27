@@ -14,6 +14,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"github.com/google/uuid"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
@@ -133,9 +134,6 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 			vertContainer := o.(*fyne.Container)
 			container := vertContainer.Objects[0].(*fyne.Container)
 
-			idLabel := container.Objects[0].(*widget.Label)
-			idLabel.SetText(user.UserID.Address)
-
 			button := container.Objects[2].(*widget.Button)
 			button.OnTapped = func() {
 				middle.Seen(user.UserID)
@@ -157,7 +155,7 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 		widget.NewLabel("Common Interests:"),
 	)
 
-	for _, interest := range middle.CommonInterests(user){
+	for _, interest := range middle.CommonInterests(user) {
 		content.Add(widget.NewLabel("- " + interests.String(interest.Category) + ": " + interest.Description))
 	}
 
@@ -165,7 +163,7 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 
 	sendBtn := widget.NewButton("Send Friend Request", func() {
 		middle.SendFriendRequest(user.UserID)
-		dialog.ShowInformation("Request Sent", "Friend request sent to "+user.UserID.Address, parent)
+		dialog.ShowInformation("Request Sent", "Friend request sent!", parent)
 	})
 	closeBtn := widget.NewButton("Close", func() {
 		userDetailsDialog.Hide()
@@ -183,7 +181,6 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 
 	userDetailsDialog.Show()
 }
-
 
 func Main() {
 	regularFont := resourceInter24ptBoldTtf
@@ -208,7 +205,7 @@ func Main() {
 
 	onRefreshUsers([]api.User{
 		{
-			UserID: api.ID{Address: "user123"},
+			UserID: api.ID{Address: uuid.Nil},
 			Interests: []api.Interest{
 				{Category: 1, Description: "Basketball"},
 				{Category: 2, Description: "Jazz"},
@@ -216,7 +213,7 @@ func Main() {
 			Seen: false,
 		},
 		{
-			UserID: api.ID{Address: "user123"},
+			UserID: api.ID{Address: uuid.Nil},
 			Interests: []api.Interest{
 				{Category: 1, Description: "Basketball"},
 				{Category: 2, Description: "Jazz"},
@@ -228,10 +225,10 @@ func Main() {
 	onRefreshFriends([]api.Friend{
 		{
 			User: api.User{
-				UserID:          api.ID{Address: "newuser456"},
+				UserID:    api.ID{Address: uuid.Nil},
 				Interests: []api.Interest{{Category: 1, Description: "description"}},
 			},
-			Name:  "John Doe",
+			Name:  "Friend",
 			Photo: "path/to/image.jpg",
 		},
 	})
