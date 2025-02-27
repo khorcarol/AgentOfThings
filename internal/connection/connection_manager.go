@@ -44,8 +44,8 @@ type ConnectionManager struct {
 
 func (cmgr *ConnectionManager) peerDisconnectWrapper() func(network.Network, network.Conn) {
 	return func(n network.Network, c network.Conn) {
-		defer cmgr.peersMutex.Unlock()
 		cmgr.peersMutex.Lock()
+		defer cmgr.peersMutex.Unlock()
 		delete(cmgr.connectedPeers, c.RemotePeer())
 	}
 }
@@ -59,7 +59,7 @@ func (cmgr *ConnectionManager) peerConnectWrapper() func(network.Network, networ
 }
 
 func initConnectionManager() (*ConnectionManager, error) {
-	cmgr := ConnectionManager{}
+	cmgr := ConnectionManager{peersMutex: sync.Mutex{}}
 	_self, err := libp2p.New()
 	if err != nil {
 		return nil, err
@@ -76,7 +76,7 @@ func initConnectionManager() (*ConnectionManager, error) {
 		ConnectedF:    cmgr.peerConnectWrapper(),
 	})
 
-	// TODO: register stream handlers for protocols
+	// register stream handlers for protocols
 	cmgr.host.SetStreamHandler(protocol.ID(peer_to_user.HandshakeProtocolID),
 		func(stream network.Stream) {
 			peer_to_user.HandshakeHandler(stream, cmgr.addIncomingUser, &cmgr.Self)
@@ -142,16 +142,16 @@ func (cmgr *ConnectionManager) peerToUserHandshake(peerAddr peer.AddrInfo) error
 func (cmgr *ConnectionManager) connectToPeer(peerAddr peer.AddrInfo, wg *sync.WaitGroup) {
 	defer wg.Done()
 	cmgr.peersMutex.Lock()
-	defer cmgr.peersMutex.Unlock()
 	// check if we are already connected to this peer
 	if _, ok := cmgr.connectedPeers[peerAddr.ID]; ok {
 		return
 	}
+	cmgr.peersMutex.Unlock()
 	// open connection to peer
 	if err := cmgr.host.Connect(context.Background(), peerAddr); err != nil {
 		log.Fatal("Failed to connect to new peer", err)
 	}
-	cmgr.connectedPeers[peerAddr.ID] = Peer
+	// cmgr.connectedPeers[peerAddr.ID] = Peer
 
 	// handshake to promote peer to user
 	go cmgr.peerToUserHandshake(peerAddr)
