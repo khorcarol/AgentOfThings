@@ -2,6 +2,7 @@ package api
 
 import (
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
+	"github.com/google/uuid"
 )
 
 // A [interests.InterestCategory] and a string to represent the data.
@@ -26,7 +27,7 @@ type Friend struct {
 }
 
 type ID struct {
-	Address string
+	Address uuid.UUID
 }
 
 // Response to an external friend request 

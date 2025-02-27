@@ -15,7 +15,7 @@ var plexSourceName = "plex"
 // Fetches session history and writes recently viewed films to a slice of interests.
 //
 // Requires a local plex instance
-func GetPlexInterests() []api.Interest {
+func getPlexInterests() []api.Interest {
 	cached := getCachedSourceInterests(plexSourceName)
 
 	if cached != nil {

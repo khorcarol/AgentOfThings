@@ -24,12 +24,11 @@ func SendFriendRequest(userID api.ID) {
 		return
 	}
 
-	data := getPersonalData()
 	cmgr, err := connection.GetCMGR()
 	if err != nil {
 		log.Fatal(err)
 	}
-	cmgr.SendFriendRequest(user, data)
+	cmgr.SendFriendRequest(user, self)
 
 	delete(users, userID)
 	friend_requests[userID] = user
