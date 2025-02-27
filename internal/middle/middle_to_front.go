@@ -28,6 +28,7 @@ func SendFriendRequest(userID api.ID) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// [self] is a package variable, see users.go.
 	cmgr.SendFriendRequest(user, self)
 
 	delete(users, userID)

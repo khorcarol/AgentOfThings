@@ -5,8 +5,8 @@ import (
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
-	"github.com/khorcarol/AgentOfThings/internal/sources"
 	"github.com/khorcarol/AgentOfThings/internal/personal"
+	"github.com/khorcarol/AgentOfThings/internal/sources"
 
 	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 )
@@ -24,8 +24,8 @@ func init() {
 }
 
 func UpdatePersonalData() {
-	// Get interests 
-	uuid, _:= getUUIDInternal()
+	// Get interests
+	uuid, _:= GetUUID()
 	id := api.ID{Address:uuid}
 	interests := sources.GetInterests()
 	us := api.User{UserID:id, Interests:interests, Seen:false}
