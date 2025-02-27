@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
 )
@@ -54,6 +55,17 @@ func getCachedSourceInterests(sourceName string) *[]api.Interest {
 	path, err := getSourceCacheFileName(sourceName)
 	if err != nil {
 		return nil
+	}
+
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil
+	} else if info != nil {
+		cacheExpirationTime := info.ModTime().Add(time.Hour * 24)
+
+		if time.Now().After(cacheExpirationTime) {
+			return nil
+		}
 	}
 
 	bytes, err := os.ReadFile(path)
