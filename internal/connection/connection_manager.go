@@ -5,6 +5,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection/discovery"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
@@ -19,6 +20,13 @@ type ConnectionManager struct {
 	host           host.Host
 	peersMutex     sync.Mutex
 	connectedPeers map[peer.ID]struct{}
+
+	// B->M, sends a new discovered user
+	IncomingUsers chan api.User
+	// B->M, sends the response to the fried request (potentially with data)
+	IncomingFriendResponse chan api.FriendResponse
+	// B->M, sends an external friend request to respond to
+	IncomingFriendRequest chan api.Friend
 }
 
 func (cmgr *ConnectionManager) peerDisconnectWrapper() func(network.Network, network.Conn) {
@@ -45,6 +53,9 @@ func InitConnectionManager() (*ConnectionManager, error) {
 	}
 	cmgr.host = _self
 	cmgr.connectedPeers = make(map[peer.ID]struct{})
+	cmgr.IncomingUsers = make(chan api.User)
+	cmgr.IncomingFriendResponse = make(chan api.FriendResponse)
+	cmgr.IncomingFriendRequest = make(chan api.Friend)
 
 	// register disconnect protocol
 	cmgr.host.Network().Notify(&network.NotifyBundle{
@@ -60,6 +71,15 @@ func InitConnectionManager() (*ConnectionManager, error) {
 		return nil, err
 	}
 	return &cmgr, nil
+}
+
+func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.Friend) error {
+	// start a new stream with friend request protocol
+	return nil
+}
+
+func (cmgr *ConnectionManager) SendFriendResponse(user api.User, data api.FriendResponse) error {
+	return nil
 }
 
 func (cmgr *ConnectionManager) waitOnPeer(wg *sync.WaitGroup) {
