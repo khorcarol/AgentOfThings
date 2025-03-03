@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/google/uuid"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
+	"image"
 )
 
 // A [interests.InterestCategory] and a string to represent the data.
@@ -22,7 +23,7 @@ type User struct {
 // A [Friend] is a [User] who we have requested to be friends with, and who has also requested to be friends with us.
 type Friend struct {
 	User  User
-	Photo string
+	Photo image.Image 
 	Name  string
 }
 

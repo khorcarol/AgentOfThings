@@ -4,7 +4,10 @@ package frontend
 
 import (
 	// "time"
+	"image"
 	"image/color"
+	"log"
+	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -203,6 +206,14 @@ func Main() {
 
 	myWindow.SetContent(tabs)
 
+	// temp, until real friends used
+	reader, err := os.Open("assets/blank-profile.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	img, _, err := image.Decode(reader)
+
+
 	onRefreshUsers([]api.User{
 		{
 			UserID: api.ID{Address: uuid.Nil},
@@ -229,8 +240,9 @@ func Main() {
 				Interests: []api.Interest{{Category: 1, Description: "description"}},
 			},
 			Name:  "Friend",
-			Photo: "path/to/image.jpg",
+			Photo: img,
 		},
 	})
 	myWindow.ShowAndRun()
 }
+
