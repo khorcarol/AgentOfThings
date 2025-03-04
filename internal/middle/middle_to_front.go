@@ -8,6 +8,18 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/personal"
 )
 
+
+type FrontEndFunctions struct {
+	friendrefresh func(friends []api.Friend)
+	userrefresh func(users []api.User)}
+
+var frontendfunctions FrontEndFunctions
+
+func Pass(refreshfriends  func(friends []api.Friend), refreshusers func(users []api.User) ){
+	frontendfunctions.friendrefresh = refreshfriends
+	frontendfunctions.userrefresh = refreshusers
+}
+
 func CommonInterests(api.User) []api.Interest {
 	// TODO: Find common interests
 	return make([]api.Interest, 0)
