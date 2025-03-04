@@ -5,9 +5,6 @@ import (
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
-	"github.com/khorcarol/AgentOfThings/internal/personal"
-	"github.com/khorcarol/AgentOfThings/internal/sources"
-
 	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 )
 
@@ -16,22 +13,8 @@ var (
 	friend_requests     = make(map[api.ID]api.User)
 	ext_friend_requests = make(map[api.ID]api.User)
 	friends             = make(map[api.ID]api.Friend)
-	self                api.Friend
 )
 
-func init() {
-	UpdatePersonalData()
-}
-
-func UpdatePersonalData() {
-	// Get interests
-	uuid, _ := GetUUID()
-	id := api.ID{Address: uuid}
-	interests := sources.GetInterests()
-	us := api.User{UserID: id, Interests: interests, Seen: false}
-
-	self = api.Friend{User: us, Photo: personal.GetPicture(), Name: personal.GetName()}
-}
 
 // Assigns a score to a user, based on number of matches
 func scoreUser(user api.User) int {

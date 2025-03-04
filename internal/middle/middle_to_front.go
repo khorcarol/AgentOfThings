@@ -5,6 +5,7 @@ import (
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
+	"github.com/khorcarol/AgentOfThings/internal/personal"
 )
 
 func CommonInterests(api.User) []api.Interest {
@@ -29,7 +30,7 @@ func SendFriendRequest(userID api.ID) {
 		log.Fatal(err)
 	}
 	// [self] is a package variable, see users.go.
-	cmgr.SendFriendRequest(user, self)
+	cmgr.SendFriendRequest(user, personal.GetSelf())
 
 	delete(users, userID)
 	friend_requests[userID] = user

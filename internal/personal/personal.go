@@ -5,7 +5,27 @@ import (
 	"image"
 	"os"
 	"path/filepath"
+
+	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/internal/sources"
 )
+
+var self api.Friend
+
+func init() {
+	uuid, _ := GetUUID()
+	id := api.ID{Address: uuid}
+	interests := sources.GetInterests()
+	us := api.User{UserID: id, Interests: interests, Seen: false}
+
+	self = api.Friend{User: us, Photo: GetPicture(), Name: GetName()}
+
+}
+
+// Returns self, the Friend struct containing our personal data
+func GetSelf() api.Friend {
+	return self
+}
 
 func getCandidatePaths() []string {
 	var paths []string
