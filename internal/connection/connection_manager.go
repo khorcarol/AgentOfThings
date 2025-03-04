@@ -65,6 +65,7 @@ func initConnectionManager() (*ConnectionManager, error) {
 	}
 	cmgr.host = _self
 	cmgr.connectedPeers = make(map[peer.ID]peerLevel)
+	cmgr.uuids = make(map[uuid.UUID]peer.ID)
 	cmgr.IncomingUsers = make(chan api.User)
 	cmgr.IncomingFriendResponse = make(chan api.FriendResponse)
 	cmgr.IncomingFriendRequest = make(chan api.Friend)
@@ -143,6 +144,7 @@ func (cmgr *ConnectionManager) connectToPeer(peerAddr peer.AddrInfo, wg *sync.Wa
 	cmgr.peersMutex.Lock()
 	// check if we are already connected to this peer
 	if _, ok := cmgr.connectedPeers[peerAddr.ID]; ok {
+		cmgr.peersMutex.Unlock()
 		return
 	}
 	cmgr.peersMutex.Unlock()
