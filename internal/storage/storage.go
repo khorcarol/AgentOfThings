@@ -8,15 +8,18 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
 )
 
-const friendsFileName = "friends.json"
+const (
+	appDirName      = "agentofthings"
+	friendsFileName = "friends.json"
+)
 
 // returns directory where data should be stored
 func GetStorageDir() (string, error) {
-	homeDir, err := os.UserHomeDir()
+	configDir, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
 	}
-	storageDir := filepath.Join(homeDir, ".agentofthings")
+	storageDir := filepath.Join(configDir, ".agentofthings")
 	if err := os.MkdirAll(storageDir, 0755); err != nil {
 		return "", err
 	}
@@ -30,7 +33,7 @@ func SaveFriends(friends map[api.ID]api.User) error {
 		return err
 	}
 
-	data, err := json.Marshal(friends)
+	data, err := json.Marshal(friends) //MasrhalIndent???
 	if err != nil {
 		return err
 	}
@@ -45,7 +48,8 @@ func LoadFriends() (map[api.ID]api.User, error) {
 		return nil, err
 	}
 
-	data, err := os.ReadFile(filepath.Join(storageDir, friendsFileName))
+	filePath := filepath.Join(storageDir, friendsFileName)
+	data, err := os.ReadFile(filePath)
 	if err != nil {
 		if os.IsNotExist(err) {
 			return make(map[api.ID]api.User), nil
