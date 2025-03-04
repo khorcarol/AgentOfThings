@@ -9,23 +9,6 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
 )
 
-// mock directory functions
-type dirProvider interface {
-	GetHomeDir() (string, error)
-	GetConfigDir() (string, error)
-}
-
-// real implementation
-type defaultDirProvider struct{}
-
-func (p defaultDirProvider) GetHomeDir() (string, error) {
-	return os.UserHomeDir()
-}
-
-func (p defaultDirProvider) GetConfigDir() (string, error) {
-	return os.UserConfigDir()
-}
-
 // mockDirProvider can be used in tests
 type mockDirProvider struct {
 	homeDir   string
@@ -41,20 +24,17 @@ func (p mockDirProvider) GetConfigDir() (string, error) {
 	return p.configDir, p.err
 }
 
-// Global variable that can be swapped for testing
-var dirProvider dirProvider = defaultDirProvider{}
-
 // TestGetStorageDir tests the GetStorageDir function
 func TestGetStorageDir(t *testing.T) {
 	// Save the original provider to restore later
-	originalProvider := dirProvider
-	defer func() { dirProvider = originalProvider }()
+	originalProvider := provider
+	defer func() { provider = originalProvider }()
 
 	// Create a temporary directory for testing
 	tempDir := t.TempDir()
 
 	// Set up the mock provider
-	dirProvider = mockDirProvider{
+	provider = mockDirProvider{
 		configDir: tempDir,
 		err:       nil,
 	}
@@ -76,7 +56,7 @@ func TestGetStorageDir(t *testing.T) {
 	}
 
 	// Test error handling
-	dirProvider = mockDirProvider{
+	provider = mockDirProvider{
 		configDir: "",
 		err:       os.ErrPermission,
 	}
@@ -96,19 +76,19 @@ func TestSaveLoadFriends(t *testing.T) {
 	}
 
 	// Save original provider to restore later
-	originalProvider := dirProvider
-	defer func() { dirProvider = originalProvider }()
+	originalProvider := provider
+	defer func() { provider = originalProvider }()
 
 	// Set up the mock provider
-	dirProvider = mockDirProvider{
+	provider = mockDirProvider{
 		configDir: tempDir,
 		err:       nil,
 	}
 
 	// Sample data
 	friends := map[api.ID]api.User{
-		"user1": {ID: "user1", Name: "Alice", Email: "alice@example.com"},
-		"user2": {ID: "user2", Name: "Bob", Email: "bob@example.com"},
+		api.ID{Address: "user1"}: {UserID: api.ID{Address: "user1"}, CommonInterests: []api.Interest{}, Seen: false},
+		api.ID{Address: "user2"}: {UserID: api.ID{Address: "user2"}, CommonInterests: []api.Interest{}, Seen: false},
 	}
 
 	// Test saving friends
@@ -162,11 +142,11 @@ func TestSaveLoadFriends_EdgeCases(t *testing.T) {
 	}
 
 	// Save original provider to restore later
-	originalProvider := dirProvider
-	defer func() { dirProvider = originalProvider }()
+	originalProvider := provider
+	defer func() { provider = originalProvider }()
 
 	// Set up the mock provider
-	dirProvider = mockDirProvider{
+	provider = mockDirProvider{
 		configDir: tempDir,
 		err:       nil,
 	}
