@@ -15,7 +15,6 @@ var (
 	friends             = make(map[api.ID]api.Friend)
 )
 
-
 // Assigns a score to a user, based on number of matches
 func scoreUser(user api.User) int {
 	score := len(user.Interests)
@@ -68,13 +67,10 @@ func friendResonse() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	friend_res := <-cmgr.IncomingFriendResponse
-	if friend_res.Accept {
-		friends[friend_res.UserID] = friend_res.Data
-	} else {
-		// TODO: Inform user that friend request has been rejected
-	}
-	delete(friend_requests, friend_res.UserID)
+	friend_res := <-cmgr.IncomingFriendRequest
+	// The refactor here is that friend requests can't be rejected, you can just hang indefinitely.
+	friends[friend_res.User.UserID] = friend_res
+	delete(friend_requests, friend_res.User.UserID)
 }
 
 // Recieve a friend request from another user
