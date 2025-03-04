@@ -212,7 +212,9 @@ func Main() {
 		log.Fatal(err)
 	}
 	img, _, err := image.Decode(reader)
-
+	if err != nil {
+		log.Print(err)
+	}
 
 	onRefreshUsers([]api.User{
 		{
@@ -245,4 +247,3 @@ func Main() {
 	})
 	myWindow.ShowAndRun()
 }
-

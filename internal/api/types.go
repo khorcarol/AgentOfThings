@@ -23,7 +23,7 @@ type User struct {
 // A [Friend] is a [User] who we have requested to be friends with, and who has also requested to be friends with us.
 type Friend struct {
 	User  User
-	Photo image.Image 
+	Photo image.Image
 	Name  string
 }
 
