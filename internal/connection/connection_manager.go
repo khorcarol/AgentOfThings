@@ -33,7 +33,6 @@ type ConnectionManager struct {
 	connectedPeers map[peer.ID]peerLevel
 	uuids          map[uuid.UUID]peer.ID
 
-	Self api.User
 	// B->M, sends a new discovered user
 	IncomingUsers chan api.User
 	// B->M, sends the response to the fried request (potentially with data)
@@ -79,7 +78,7 @@ func initConnectionManager() (*ConnectionManager, error) {
 	// register stream handlers for protocols
 	cmgr.host.SetStreamHandler(protocol.ID(peer_to_user.HandshakeProtocolID),
 		func(stream network.Stream) {
-			peer_to_user.HandshakeHandler(stream, cmgr.addIncomingUser, &cmgr.Self)
+			peer_to_user.HandshakeHandler(stream, cmgr.addIncomingUser)
 		})
 
 	// initialise peer discovery via mdns
@@ -122,7 +121,7 @@ func (cmgr *ConnectionManager) peerToUserHandshake(peerAddr peer.AddrInfo) error
 		return nil
 	}
 	// carry out handshake
-	msg, err := peer_to_user.InitiateHandshake(cmgr.host, context.Background(), peerAddr.ID, cmgr.Self)
+	msg, err := peer_to_user.InitiateHandshake(cmgr.host, context.Background(), peerAddr.ID)
 	if err != nil {
 		return err
 	}

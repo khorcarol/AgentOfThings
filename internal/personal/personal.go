@@ -3,6 +3,7 @@ package personal
 import (
 	"errors"
 	"image"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -19,7 +20,6 @@ func init() {
 	us := api.User{UserID: id, Interests: interests, Seen: false}
 
 	self = api.Friend{User: us, Photo: GetPicture(), Name: GetName()}
-
 }
 
 // Returns self, the Friend struct containing our personal data
@@ -64,7 +64,8 @@ func GetPicture() image.Image {
 		}
 	}
 	// No images could be loaded at all, even the basic.
-	panic(errors.New("failed to load a profile picture: " + lastErr.Error()))
+	log.Print(errors.New("failed to load a profile picture: " + lastErr.Error()))
+	return nil
 }
 
 // TODO: Load name.
