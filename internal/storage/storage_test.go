@@ -9,13 +9,13 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
 )
 
-// testHelper interface allows us to mock directory functions
+// mock directory functions
 type dirProvider interface {
 	GetHomeDir() (string, error)
 	GetConfigDir() (string, error)
 }
 
-// defaultDirProvider is the real implementation
+// real implementation
 type defaultDirProvider struct{}
 
 func (p defaultDirProvider) GetHomeDir() (string, error) {
@@ -147,6 +147,51 @@ func TestSaveLoadFriends(t *testing.T) {
 	if err := os.WriteFile(filePath, []byte("{invalid json}"), 0644); err != nil {
 		t.Fatalf("Failed to write invalid JSON: %v", err)
 	}
+	_, err = LoadFriends()
+	if err == nil {
+		t.Error("LoadFriends() should have failed with invalid JSON")
+	}
+}
+
+func TestSaveLoadFriends_EdgeCases(t *testing.T) {
+	// Create temporary test directory
+	tempDir := t.TempDir()
+	testStorageDir := filepath.Join(tempDir, appDirName)
+	if err := os.MkdirAll(testStorageDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
+
+	// Save original provider to restore later
+	originalProvider := dirProvider
+	defer func() { dirProvider = originalProvider }()
+
+	// Set up the mock provider
+	dirProvider = mockDirProvider{
+		configDir: tempDir,
+		err:       nil,
+	}
+
+	// Test with a directory that already exists
+	if err := os.MkdirAll(testStorageDir, 0755); err != nil {
+		t.Fatalf("Failed to create test directory: %v", err)
+	}
+
+	// Test with a file that has incorrect permissions
+	filePath := filepath.Join(testStorageDir, friendsFileName)
+	if err := os.WriteFile(filePath, []byte("{}"), 0000); err != nil {
+		t.Fatalf("Failed to write test file: %v", err)
+	}
+
+	_, err := LoadFriends()
+	if err == nil {
+		t.Error("LoadFriends() should have failed with incorrect file permissions")
+	}
+
+	// Test with a corrupted JSON file
+	if err := os.WriteFile(filePath, []byte("{invalid json}"), 0644); err != nil {
+		t.Fatalf("Failed to write invalid JSON: %v", err)
+	}
+
 	_, err = LoadFriends()
 	if err == nil {
 		t.Error("LoadFriends() should have failed with invalid JSON")
