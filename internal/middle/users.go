@@ -30,22 +30,6 @@ func scoreUser(user api.User) int {
 }
 
 
-// Returns a list of users in order of their score
-func rankUsers() []api.ID{
-	for id, user := range users {
-		_, ok := friends[id]
-		if ok {
-			continue
-		}
-		score := scoreUser(user)
-
-		ranked_users.Push(user.UserID, score)
-	}
-
-	return ranked_users.To_list()
-}
-
-
 // Sets the user to seen
 func setUserSeen(id api.ID, val bool) {
 	u, t := users[id]

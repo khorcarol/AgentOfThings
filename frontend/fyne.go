@@ -88,7 +88,7 @@ func createFriendsUI() fyne.CanvasObject {
 			nameLabel.SetText(friend.Name)
 
 			interestsLabel := details.Objects[1].(*widget.Label)
-			interestsLabel.SetText(formatInterests(middle.CommonInterests(friend.User)))
+			interestsLabel.SetText(formatInterests(middle.CommonInterests(friend.User.UserID)))
 		},
 	)
 
@@ -158,7 +158,7 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 		widget.NewLabel("Common Interests:"),
 	)
 
-	for _, interest := range middle.CommonInterests(user) {
+	for _, interest := range middle.CommonInterests(user.UserID) {
 		content.Add(widget.NewLabel("- " + interests.String(interest.Category) + ": " + interest.Description))
 	}
 
