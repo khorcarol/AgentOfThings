@@ -15,6 +15,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/internal/personal"
 )
 
 const (
@@ -26,7 +27,7 @@ const (
 // InitiateHandshake dials a remote peer, sends our interests (as a JSON HandshakeMessage),
 // half-closes the write side, then waits for a response.
 // It returns the remote peer’s handshake message on success.
-func InitiateHandshake(host host.Host, ctx context.Context, remote peer.ID, usr api.User) (*api.User, error) {
+func InitiateHandshake(host host.Host, ctx context.Context, remote peer.ID) (*api.User, error) {
 	stream, err := host.NewStream(ctx, remote, protocol.ID(HandshakeProtocolID))
 	if err != nil {
 		return nil, fmt.Errorf("handshake: failed to open stream to peer %s: %w", remote, err)
@@ -41,6 +42,9 @@ func InitiateHandshake(host host.Host, ctx context.Context, remote peer.ID, usr 
 		log.Printf("handshake: setting deadline failed: %v", err)
 	}
 
+	friend := personal.GetSelf()
+
+	usr := friend.User
 	if len(usr.Interests) > maxInterests {
 		usr.Interests = usr.Interests[:maxInterests]
 	}
@@ -71,7 +75,7 @@ func InitiateHandshake(host host.Host, ctx context.Context, remote peer.ID, usr 
 
 // handshakeHandler is invoked when a remote peer connects.
 // It decodes the remote’s handshake message and responds with our interests.
-func HandshakeHandler(stream network.Stream, callback func(*api.User, peer.ID), toSend *api.User) {
+func HandshakeHandler(stream network.Stream, callback func(*api.User, peer.ID)) {
 	defer stream.Close()
 
 	if err := stream.SetDeadline(time.Now().Add(HandshakeTimeout)); err != nil {
@@ -88,7 +92,9 @@ func HandshakeHandler(stream network.Stream, callback func(*api.User, peer.ID), 
 	}
 	log.Printf("handshake: received handshake message from peer: %+v", &remoteMessage)
 
-	ourMessage := *toSend
+	toSend := personal.GetSelf()
+
+	ourMessage := toSend.User
 	if len(ourMessage.Interests) > maxInterests {
 		ourMessage.Interests = ourMessage.Interests[:maxInterests]
 	}
