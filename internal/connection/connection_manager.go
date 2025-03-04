@@ -101,12 +101,12 @@ func (cmgr *ConnectionManager) addIncomingUser(msg *api.User, id peer.ID) {
 	cmgr.IncomingUsers <- *msg
 }
 
-func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.Friend) error {
+func (cmgr *ConnectionManager) SendFriendRequest(user api.ID, data api.Friend) error {
 	// start a new stream with friend request protocol
 	return nil
 }
 
-func (cmgr *ConnectionManager) SendFriendResponse(user api.User, data api.FriendResponse) error {
+func (cmgr *ConnectionManager) SendFriendResponse(user api.ID, resp bool) error {
 	return nil
 }
 
