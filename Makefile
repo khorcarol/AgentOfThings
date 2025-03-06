@@ -9,7 +9,7 @@ build: format
 	go build -o build/agentofthings
 
 build-android:
-	$(GO_BINARY_PATH)/fyne package -os android -appID com.groupalpha.agentofthings -icon assets/golang.png
+	GOFLAGS="-ldflags=-checklinkname=0" $(GO_BINARY_PATH)/fyne package -os android -appID com.groupalpha.agentofthings -icon assets/golang.png
 
 generate-bundled:
 	go generate ./frontend
