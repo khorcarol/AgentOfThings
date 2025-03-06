@@ -1,8 +1,9 @@
 package priorityQueue
 
 import (
-	"github.com/khorcarol/AgentOfThings/lib/option"
 	"testing"
+
+	"github.com/khorcarol/AgentOfThings/lib/option"
 )
 
 func Test_pops_correct_order(t *testing.T) {
@@ -88,5 +89,17 @@ func Test_updates_item(t *testing.T) {
 	}
 	if v3 != 1 {
 		t.Errorf("Fail on %s: First pop meant to be 1, got: %d", t.Name(), v1)
+	}
+}
+
+func Test_to_list(t *testing.T) {
+	pq := NewPriorityQueue[int]()
+
+	pq.Push(1, 1)
+
+	_ = pq.To_list()
+
+	if pq.Len() != 0 {
+		t.Errorf("Fail on %s: Priority queue length should be 0: %d", t.Name(), pq.Len())
 	}
 }
