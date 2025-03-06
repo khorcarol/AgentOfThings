@@ -5,8 +5,11 @@ package frontend
 
 import (
 	// "time"
-
+	"github.com/google/uuid"
+	"image"
 	"image/color"
+	"log"
+	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -60,6 +63,11 @@ var (
 	outgoingFriendRequests []api.User
 	IncomingFriendRequests []api.User
 )
+
+func frRequest(in []api.User, out []api.User){
+	onRefreshIncomingFriendRequests(in)
+	onRefreshOutgoingFriendRequests(out)
+}
 
 func onRefreshIncomingFriendRequests(in []api.User) {
 	IncomingFriendRequests = in
@@ -375,5 +383,5 @@ func Main() {
 }
 
 func Init() {
-	middle.Pass(onRefreshFriends, onRefreshUsers)
+	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest)
 }
