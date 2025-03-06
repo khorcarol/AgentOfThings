@@ -64,7 +64,7 @@ var (
 	IncomingFriendRequests []api.User
 )
 
-func frRequest(in []api.User, out []api.User){
+func frRequest(in []api.User, out []api.User) {
 	onRefreshIncomingFriendRequests(in)
 	onRefreshOutgoingFriendRequests(out)
 }
@@ -108,6 +108,13 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			button := vertContainer.Objects[3].(*widget.Button)
 			button.OnTapped = func() {
 				log.Println("Accepted friend requests")
+				middle.SendFriendRequest(user.UserID, true)
+			}
+
+			button2 := vertContainer.Objects[4].(*widget.Button)
+			button2.OnTapped = func() {
+				log.Println("Rejected friend requests")
+				middle.SendFriendRequest(user.UserID, false)
 			}
 		},
 	)
@@ -339,7 +346,7 @@ func Main() {
 		},
 	})
 
-	middle.Pass(onRefreshFriends, onRefreshUsers)
+	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest)
 
 	onRefreshIncomingFriendRequests([]api.User{
 		{
