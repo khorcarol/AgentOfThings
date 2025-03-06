@@ -6,6 +6,7 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
 	"github.com/khorcarol/AgentOfThings/internal/personal"
+	"github.com/khorcarol/AgentOfThings/internal/storage"
 	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 )
 
@@ -17,6 +18,23 @@ var (
 	common_interests    = make(map[api.ID]([]api.Interest))
 	ranked_users        = priorityQueue.NewPriorityQueue[api.ID]()
 )
+
+// Retrieve friends from storage
+func init() {
+	loadedFriends, err := storage.LoadFriends()
+	if err == nil {
+		friends = loadedFriends
+	}
+}
+
+func saveFriends() {
+	_ = storage.SaveFriends(friends)
+}
+
+func AddFriend(id api.ID, user api.Friend) {
+	friends[id] = user
+	saveFriends()
+}
 
 // Assigns a score to a user, based on number of matches
 func scoreUser(user api.User) int {
@@ -135,6 +153,7 @@ func waitOnFriendRequest() {
 		// this is a new incoming friend request
 		delete(users, friend_res.Friend.User.UserID)
 		ranked_users.Remove(friend_res.Friend.User.UserID)
+
 
 		ext_friend_requests[friend_res.Friend.User.UserID] = friend_res.Friend
 
