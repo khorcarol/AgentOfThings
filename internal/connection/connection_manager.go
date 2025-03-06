@@ -31,7 +31,7 @@ type ConnectionManager struct {
 	// B->M, sends a new discovered user
 	IncomingUsers chan api.User
 	// B->M, sends an external friend request to respond to
-	IncomingFriendRequest chan api.Friend
+	IncomingFriendRequest chan api.FriendRequest
 }
 
 func (cmgr *ConnectionManager) peerDisconnectWrapper() func(network.Network, network.Conn) {
@@ -60,7 +60,7 @@ func initConnectionManager() (*ConnectionManager, error) {
 	cmgr.connectedPeers = make(map[peer.ID]struct{})
 	cmgr.uuids = make(map[uuid.UUID]peer.ID)
 	cmgr.IncomingUsers = make(chan api.User, 10)
-	cmgr.IncomingFriendRequest = make(chan api.Friend, 10)
+	cmgr.IncomingFriendRequest = make(chan api.FriendRequest, 10)
 
 	// register disconnect protocol
 	cmgr.host.Network().Notify(&network.NotifyBundle{
@@ -75,7 +75,7 @@ func initConnectionManager() (*ConnectionManager, error) {
 		})
 	cmgr.host.SetStreamHandler(protocol.ID(user_to_friend.FriendRequestProtocolID),
 		func(stream network.Stream) {
-			user_to_friend.FriendRequestHandler(stream, func(f *api.Friend, pid peer.ID) {
+			user_to_friend.FriendRequestHandler(stream, func(f *api.FriendRequest, pid peer.ID) {
 				// Pass friend data to middle.
 				cmgr.IncomingFriendRequest <- *f
 			})
@@ -102,8 +102,8 @@ func (cmgr *ConnectionManager) addIncomingUser(msg *api.User, id peer.ID) {
 
 // SendFriendRequest sends a friend request by calling the friend protocol layer.
 // Application logic (i.e. middle) should handle if this friend is to be displayed or stored.
-func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.Friend) error {
-	peerID, ok := cmgr.uuids[data.User.UserID.Address]
+func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.FriendRequest) error {
+	peerID, ok := cmgr.uuids[data.Friend.User.UserID.Address]
 	if !ok {
 		return nil
 	}
