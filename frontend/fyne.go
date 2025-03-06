@@ -5,11 +5,12 @@ package frontend
 
 import (
 	// "time"
-	"github.com/google/uuid"
 	"image"
 	"image/color"
 	"log"
 	"os"
+
+	"github.com/google/uuid"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -100,10 +101,13 @@ func createFriendRequestsUI() fyne.CanvasObject {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			user := currentUsers[i]
 			vertContainer := o.(*fyne.Container)
-			image := vertContainer.Objects[2].(*canvas.Image)
 
-			image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
-			image.FillMode = canvas.ImageFillContain
+			if len(user.Interests) > 0 {
+				image := vertContainer.Objects[2].(*canvas.Image)
+
+				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+				image.FillMode = canvas.ImageFillContain
+			}
 
 			button := vertContainer.Objects[3].(*widget.Button)
 			button.OnTapped = func() {
@@ -134,10 +138,13 @@ func createFriendRequestsUI() fyne.CanvasObject {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			user := currentUsers[i]
 			vertContainer := o.(*fyne.Container)
-			image := vertContainer.Objects[1].(*canvas.Image)
 
-			image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
-			image.FillMode = canvas.ImageFillContain
+			if len(user.Interests) > 0 {
+				image := vertContainer.Objects[1].(*canvas.Image)
+
+				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+				image.FillMode = canvas.ImageFillContain
+			}
 		},
 	)
 	return container.NewGridWithColumns(2,
@@ -238,10 +245,12 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 				showUserDetailsDialog(user, myWindow)
 			}
 
-			image := vertContainer.Objects[1].(*canvas.Image)
+			if len(user.Interests) > 0 {
+				image := vertContainer.Objects[1].(*canvas.Image)
+				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+				image.FillMode = canvas.ImageFillContain
+			}
 
-			image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
-			image.FillMode = canvas.ImageFillContain
 		},
 	)
 	return container.NewBorder(nil, nil, nil, nil, usersList)
