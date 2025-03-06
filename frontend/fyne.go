@@ -63,23 +63,23 @@ var (
 )
 
 func frRequest(in []api.User, out []api.User) {
-	onRefreshIncomingFriendRequests(in)
-	onRefreshOutgoingFriendRequests(out)
-}
-
-func onRefreshIncomingFriendRequests(in []api.User) {
 	IncomingFriendRequests = in
+	outgoingFriendRequests = out
 	if incomingFriendsList != nil {
 		incomingFriendsList.Refresh()
 	}
-}
-
-func onRefreshOutgoingFriendRequests(out []api.User) {
-	outgoingFriendRequests = out
 	if outgoingFriendsList != nil {
 		outgoingFriendsList.Refresh()
 	}
 }
+
+// func onRefreshIncomingFriendRequests(in []api.User) {
+
+// }
+
+// func onRefreshOutgoingFriendRequests(out []api.User) {
+
+// }
 
 func createFriendRequestsUI() fyne.CanvasObject {
 	incomingFriendsList = widget.NewList(
@@ -96,7 +96,7 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			user := currentUsers[i]
+			user := IncomingFriendRequests[i]
 			vertContainer := o.(*fyne.Container)
 
 			if len(user.Interests) > 0 {
@@ -133,7 +133,7 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			user := currentUsers[i]
+			user := outgoingFriendRequests[i]
 			vertContainer := o.(*fyne.Container)
 
 			if len(user.Interests) > 0 {
