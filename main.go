@@ -13,9 +13,9 @@ func main() {
 	if err != nil {
 		log.Fatal("Failed to initialise ConnectionManager:", err)
 	}
-	connection_manager.StartDiscovery()
 
+	frontend.Init()
 	middle.Start()
-
+	connection_manager.StartDiscovery()
 	frontend.Main()
 }

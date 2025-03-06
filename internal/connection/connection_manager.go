@@ -115,7 +115,6 @@ func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.Friend)
 	}
 
 	return user_to_friend.SendFriendData(cmgr.host, context.Background(), peerID, data)
-
 }
 
 func (cmgr *ConnectionManager) waitOnPeer(wg *sync.WaitGroup) {
@@ -161,7 +160,6 @@ func (cmgr *ConnectionManager) connectToPeer(peerAddr peer.AddrInfo, wg *sync.Wa
 	if err := cmgr.host.Connect(context.Background(), peerAddr); err != nil {
 		log.Fatal("Failed to connect to new peer", err)
 	}
-	// cmgr.connectedPeers[peerAddr.ID] = Peer
 
 	// handshake to promote peer to user
 	go cmgr.peerToUserHandshake(peerAddr, wg)

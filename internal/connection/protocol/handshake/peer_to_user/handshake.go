@@ -58,14 +58,14 @@ func InitiateHandshake(host host.Host, ctx context.Context, remote peer.ID) (*ap
 		}
 	}
 
-	log.Printf("handshake: sent our handshake message: %+v", usr)
+	log.Printf("handshake: sent our handshake message as sender: %+v", usr)
 
 	var remoteMessage api.User
 	if err := transport.DecodeFromStream(stream, &remoteMessage); err != nil {
 		stream.Reset()
 		return nil, fmt.Errorf("handshake: failed to decode remote handshake message: %w", err)
 	}
-	log.Printf("handshake: received handshake message: %+v", &remoteMessage)
+	log.Printf("handshake: received handshake message as sender: %+v", &remoteMessage)
 	return &remoteMessage, nil
 }
 
@@ -86,7 +86,7 @@ func HandshakeHandler(stream network.Stream, callback func(*api.User, peer.ID)) 
 		stream.Reset()
 		return
 	}
-	log.Printf("handshake: received handshake message from peer: %+v", &remoteMessage)
+	log.Printf("handshake: received handshake message from peer as recipient: %+v", &remoteMessage)
 
 	toSend := personal.GetSelf()
 
@@ -106,6 +106,6 @@ func HandshakeHandler(stream network.Stream, callback func(*api.User, peer.ID)) 
 			log.Printf("handshake: failed to half-close write: %v", err)
 		}
 	}
-	log.Printf("handshake: sent our handshake message: %+v", ourMessage)
+	log.Printf("handshake: sent our handshake message as recipient: %+v", ourMessage)
 	callback(&remoteMessage, stream.Conn().RemotePeer())
 }

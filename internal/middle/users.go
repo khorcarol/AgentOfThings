@@ -83,12 +83,14 @@ func discoverUser() {
 	// TODO: Check if stored friend
 	_, ok := friends[user.UserID]
 	if !ok {
-		users[user.UserID] = user
+		if _, ok := users[user.UserID]; !ok {
+			users[user.UserID] = user
 
-		updateCommonInterests(user.UserID, user.Interests)
-		ranked_users.Push(user.UserID, scoreUser(user))
+			updateCommonInterests(user.UserID, user.Interests)
+			ranked_users.Push(user.UserID, scoreUser(user))
 
-		frontend_functions.user_refresh(getUserList())
+			frontend_functions.user_refresh(getUserList())
+		}
 	}
 }
 

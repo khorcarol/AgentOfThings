@@ -4,10 +4,8 @@ package frontend
 
 import (
 	// "time"
-	"image"
+
 	"image/color"
-	"log"
-	"os"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -17,7 +15,6 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/google/uuid"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
@@ -118,7 +115,6 @@ func formatInterests(interests []api.Interest) string {
 }
 
 func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
-
 	usersList = widget.NewList(
 		func() int { return len(currentUsers) },
 		func() fyne.CanvasObject {
@@ -206,46 +202,9 @@ func Main() {
 
 	myWindow.SetContent(tabs)
 
-	// temp, until real friends used
-	reader, err := os.Open("assets/blank-profile.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	img, _, err := image.Decode(reader)
-	if err != nil {
-		log.Print(err)
-	}
-
-	onRefreshUsers([]api.User{
-		{
-			UserID: api.ID{Address: uuid.Nil},
-			Interests: []api.Interest{
-				{Category: 1, Description: "Basketball"},
-				{Category: 2, Description: "Jazz"},
-			},
-			Seen: false,
-		},
-		{
-			UserID: api.ID{Address: uuid.Nil},
-			Interests: []api.Interest{
-				{Category: 1, Description: "Basketball"},
-				{Category: 2, Description: "Jazz"},
-			},
-			Seen: false,
-		},
-	})
-
-	onRefreshFriends([]api.Friend{
-		{
-			User: api.User{
-				UserID:    api.ID{Address: uuid.Nil},
-				Interests: []api.Interest{{Category: 1, Description: "description"}},
-			},
-			Name:  "Friend",
-			Photo: img,
-		},
-	})
-
-	middle.Pass(onRefreshFriends, onRefreshUsers)
 	myWindow.ShowAndRun()
+}
+
+func Init() {
+	middle.Pass(onRefreshFriends, onRefreshUsers)
 }
