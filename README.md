@@ -23,3 +23,24 @@ Clear out the `/build` folder by running:
 ```sh
 make clean
 ```
+
+## Building android
+
+You need to first install the [fyne command line tool](https://docs.fyne.io/started/packaging):
+
+```sh
+go install fyne.io/fyne/v2/cmd/fyne@latest
+```
+
+You must also set the following environment variables to your Android SDK and NDK:
+
+```sh
+export ANDROID_HOME=/path/to/Android/SDK
+export ANDROID_NDK_HOME=/path/to/Android/NDK
+```
+
+Then build using:
+
+```sh
+make build-android
+```
