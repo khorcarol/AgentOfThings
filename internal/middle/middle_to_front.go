@@ -42,7 +42,7 @@ func GetFriends() []api.Friend {
 func SendFriendRequest(userID api.ID) {
 	user, err := users[userID]
 	if !err {
-		log.Printf("Error: Friend response not in ext_friend_requests %t", err)
+		log.Printf("Error: User not in user list%t", err)
 	}
 
 	cmgr, err2 := connection.GetCMGR()
