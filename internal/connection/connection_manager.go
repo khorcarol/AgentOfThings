@@ -65,9 +65,10 @@ func initConnectionManager() (*ConnectionManager, error) {
 	}
 	cmgr.host = _self
 	cmgr.connectedPeers = make(map[peer.ID]peerLevel)
-	cmgr.IncomingUsers = make(chan api.User)
-	cmgr.IncomingFriendResponse = make(chan api.FriendResponse)
-	cmgr.IncomingFriendRequest = make(chan api.Friend)
+	cmgr.uuids = make(map[uuid.UUID]peer.ID)
+	cmgr.IncomingUsers = make(chan api.User, 10)
+	cmgr.IncomingFriendResponse = make(chan api.FriendResponse, 10)
+	cmgr.IncomingFriendRequest = make(chan api.Friend, 10)
 
 	// register disconnect protocol
 	cmgr.host.Network().Notify(&network.NotifyBundle{
@@ -115,7 +116,8 @@ func (cmgr *ConnectionManager) waitOnPeer(wg *sync.WaitGroup) {
 	go cmgr.connectToPeer(peerAddr, wg)
 }
 
-func (cmgr *ConnectionManager) peerToUserHandshake(peerAddr peer.AddrInfo) error {
+func (cmgr *ConnectionManager) peerToUserHandshake(peerAddr peer.AddrInfo, wg *sync.WaitGroup) error {
+	defer wg.Done()
 	// check whether we are actually still connected to the peer
 	if _, ok := cmgr.connectedPeers[peerAddr.ID]; !ok {
 		return nil
@@ -139,10 +141,10 @@ func (cmgr *ConnectionManager) peerToUserHandshake(peerAddr peer.AddrInfo) error
 }
 
 func (cmgr *ConnectionManager) connectToPeer(peerAddr peer.AddrInfo, wg *sync.WaitGroup) {
-	defer wg.Done()
 	cmgr.peersMutex.Lock()
 	// check if we are already connected to this peer
 	if _, ok := cmgr.connectedPeers[peerAddr.ID]; ok {
+		wg.Done()
 		return
 	}
 	cmgr.peersMutex.Unlock()
@@ -153,5 +155,5 @@ func (cmgr *ConnectionManager) connectToPeer(peerAddr peer.AddrInfo, wg *sync.Wa
 	// cmgr.connectedPeers[peerAddr.ID] = Peer
 
 	// handshake to promote peer to user
-	go cmgr.peerToUserHandshake(peerAddr)
+	go cmgr.peerToUserHandshake(peerAddr, wg)
 }
