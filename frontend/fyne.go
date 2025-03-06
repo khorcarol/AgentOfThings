@@ -245,5 +245,7 @@ func Main() {
 			Photo: img,
 		},
 	})
+
+	middle.Pass(onRefreshFriends, onRefreshUsers)
 	myWindow.ShowAndRun()
 }
