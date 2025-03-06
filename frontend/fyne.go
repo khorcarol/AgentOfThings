@@ -55,6 +55,89 @@ func (c *customTheme) Color(name fyne.ThemeColorName, _ fyne.ThemeVariant) color
 }
 
 var (
+	incomingFriendsList    *widget.List
+	outgoingFriendsList    *widget.List
+	outgoingFriendRequests []api.User
+	IncomingFriendRequests []api.User
+)
+
+func onRefreshIncomingFriendRequests(in []api.User) {
+	IncomingFriendRequests = in
+	if incomingFriendsList != nil {
+		incomingFriendsList.Refresh()
+	}
+}
+
+func onRefreshOutgoingFriendRequests(out []api.User) {
+	outgoingFriendRequests = out
+	if outgoingFriendsList != nil {
+		outgoingFriendsList.Refresh()
+	}
+}
+
+func createFriendRequestsUI() fyne.CanvasObject {
+	incomingFriendsList = widget.NewList(
+		func() int { return len(IncomingFriendRequests) },
+		func() fyne.CanvasObject {
+			image := &canvas.Image{}
+			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			return container.NewVBox(
+				widget.NewLabel("User ID"),
+				layout.NewSpacer(),
+				image,
+				widget.NewButton("Accept Friend Request", nil),
+				widget.NewButton("Reject Friend Request", nil),
+			)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			user := currentUsers[i]
+			vertContainer := o.(*fyne.Container)
+			image := vertContainer.Objects[2].(*canvas.Image)
+
+			image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+			image.FillMode = canvas.ImageFillContain
+
+			button := vertContainer.Objects[3].(*widget.Button)
+			button.OnTapped = func() {
+				log.Println("Accepted friend requests")
+			}
+		},
+	)
+
+	outgoingFriendsList = widget.NewList(
+		func() int { return len(outgoingFriendRequests) },
+		func() fyne.CanvasObject {
+			image := &canvas.Image{}
+			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			return container.NewVBox(container.NewHBox(
+				widget.NewLabel("User ID"),
+				layout.NewSpacer(),
+			),
+				image,
+			)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			user := currentUsers[i]
+			vertContainer := o.(*fyne.Container)
+			image := vertContainer.Objects[1].(*canvas.Image)
+
+			image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+			image.FillMode = canvas.ImageFillContain
+		},
+	)
+	return container.NewGridWithColumns(2,
+		container.NewBorder(
+			widget.NewLabel("Incoming Friend Requests"),
+			nil, nil, nil, incomingFriendsList,
+		),
+		container.NewBorder(
+			widget.NewLabel("Outgoing Friend Requests"),
+			nil, nil, nil, outgoingFriendsList,
+		))
+
+}
+
+var (
 	friendsList    *widget.List
 	usersList      *widget.List
 	currentFriends []api.Friend
@@ -142,7 +225,7 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 
 			image := vertContainer.Objects[1].(*canvas.Image)
 
-			image.Resource, _ = fyne.LoadResourceFromURLString("https://go.dev/blog/go-brand/Go-Logo/JPG/Go-Logo_Blue.jpg")
+			image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
 			image.FillMode = canvas.ImageFillContain
 		},
 	)
@@ -182,6 +265,10 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 	userDetailsDialog.Show()
 }
 
+// func showPopup(win fyne.Window) {
+// 	dialog.ShowInformation("Notification", "Friend request has been accepted", win)
+// }
+
 func Main() {
 	regularFont := resourceInter24ptBoldTtf
 
@@ -198,10 +285,91 @@ func Main() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Peers", createUsersUI(myWindow)),
 		container.NewTabItem("Friends", createFriendsUI()),
+		container.NewTabItem("Friend Requests", createFriendRequestsUI()),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	myWindow.SetContent(tabs)
+
+	// temp, until real friends used
+	reader, err := os.Open("assets/blank-profile.png")
+	if err != nil {
+		log.Fatal(err)
+	}
+	img, _, err := image.Decode(reader)
+	if err != nil {
+		log.Print(err)
+	}
+	var image = "https://i.scdn.co/image/ab67616d0000b273b579560ed2e5acaf7a129f82"
+	onRefreshUsers([]api.User{
+		{
+			UserID: api.ID{Address: uuid.Nil},
+			Interests: []api.Interest{
+				{Category: 1, Description: "Basketball", Image: &image},
+				{Category: 2, Description: "Jazz"},
+			},
+			Seen: false,
+		},
+		{
+			UserID: api.ID{Address: uuid.Nil},
+			Interests: []api.Interest{
+				{Category: 1, Description: "Basketball", Image: &image},
+				{Category: 2, Description: "Jazz"},
+			},
+			Seen: false,
+		},
+	})
+
+	onRefreshFriends([]api.Friend{
+		{
+			User: api.User{
+				UserID:    api.ID{Address: uuid.Nil},
+				Interests: []api.Interest{{Category: 1, Description: "description"}},
+			},
+			Name:  "Friend",
+			Photo: img,
+		},
+	})
+
+	middle.Pass(onRefreshFriends, onRefreshUsers)
+
+	onRefreshIncomingFriendRequests([]api.User{
+		{
+			UserID: api.ID{Address: uuid.Nil},
+			Interests: []api.Interest{
+				{Category: 1, Description: "Basketball", Image: &image},
+				{Category: 2, Description: "Jazz"},
+			},
+			Seen: false,
+		},
+		{
+			UserID: api.ID{Address: uuid.Nil},
+			Interests: []api.Interest{
+				{Category: 1, Description: "Basketball", Image: &image},
+				{Category: 2, Description: "Jazz"},
+			},
+			Seen: false,
+		},
+	})
+
+	onRefreshOutgoingFriendRequests([]api.User{
+		{
+			UserID: api.ID{Address: uuid.Nil},
+			Interests: []api.Interest{
+				{Category: 1, Description: "Basketball", Image: &image},
+				{Category: 2, Description: "Jazz"},
+			},
+			Seen: false,
+		},
+		{
+			UserID: api.ID{Address: uuid.Nil},
+			Interests: []api.Interest{
+				{Category: 1, Description: "Basketball", Image: &image},
+				{Category: 2, Description: "Jazz"},
+			},
+			Seen: false,
+		},
+	})
 
 	myWindow.ShowAndRun()
 }
