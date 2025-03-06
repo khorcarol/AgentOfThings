@@ -85,3 +85,35 @@ jobs:
 
       - name: Run Go tests
         run: go test ./... -v
+
+  build-android:
+    name: Build for Android
+    runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, 'Merge pull request') && !startsWith(github.event.head_commit.message, 'ci:')"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Use Go 1.23.6
+        uses: actions/setup-go@v4
+        with:
+          go-version: "1.23.6"
+
+      - name: Install OS dependencies (pkg-config, xkbcommon, Wayland, Vulkan, X11)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            golang \
+            gcc \
+            libgl1-mesa-dev \
+            xorg-dev \
+            libxkbcommon-dev
+
+      - name: Install Go modules
+        run: go mod download
+
+      - name: Install fyne cli
+        run: go install fyne.io/fyne/v2/cmd/fyne@latest
+
+      - name: Run Go tests
+        run: make build-android
