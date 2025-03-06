@@ -9,7 +9,7 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection/discovery"
 	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/handshake/peer_to_user"
-	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/user_to_friend"
+	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/handshake/user_to_friend"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
