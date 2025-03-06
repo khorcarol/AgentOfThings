@@ -9,14 +9,15 @@ import (
 )
 
 type FrontEndFunctions struct {
-	friendrefresh func(friends []api.Friend)
-	userrefresh func(users []api.User)}
+	friend_refresh func(friends []api.Friend)
+	user_refresh func(users []api.User)
+}
 
 var frontendfunctions FrontEndFunctions
 
 func Pass(refreshfriends  func(friends []api.Friend), refreshusers func(users []api.User) ){
-	frontendfunctions.friendrefresh = refreshfriends
-	frontendfunctions.userrefresh = refreshusers
+	frontendfunctions.friend_refresh = refreshfriends
+	frontendfunctions.user_refresh = refreshusers
 }
 
 func CommonInterests(userID api.ID) []api.Interest {

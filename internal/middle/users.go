@@ -38,6 +38,21 @@ func setUserSeen(id api.ID, val bool) {
 	}
 }
 
+func getUserList() []api.User{
+	res := []api.User{}
+	for _, e := range ranked_users.To_list(){
+		res = append(res, users[e])
+	}
+	return res
+}
+
+func getFriendList() []api.Friend {
+	res := []api.Friend{}
+	for _, v := range friends {
+		res = append(res, v)
+	}
+	return res
+}
 
 // Updates (or creates) entry for common interests
 func updateCommonInterests(userID api.ID, interests []api.Interest) {
@@ -69,11 +84,15 @@ func discoverUser() {
 	user := <-cmgr.IncomingUsers
 
 	// TODO: Check if stored friend
+	_, ok := friends[user.UserID]
+	if !ok {
+		users[user.UserID] = user
 
-	users[user.UserID] = user
+		updateCommonInterests(user.UserID, user.Interests)
+		ranked_users.Push(user.UserID, scoreUser(user))
 
-	updateCommonInterests(user.UserID, user.Interests)
-	ranked_users.Push(user.UserID, scoreUser(user))
+		frontend_functions.user_refresh(getUserList())
+	}
 }
 
 
@@ -89,6 +108,7 @@ func friendResonse() {
 	if ok {
 		friends[friend_res.User.UserID] = friend_res
 		delete(friend_requests, friend_res.User.UserID)
+		frontend_functions.friend_refresh(getFriendList())
 		// TODO: Tell user that friend requests have been accepted
 	} else {
 		ext_friend_requests[friend_res.User.UserID] = friend_res
