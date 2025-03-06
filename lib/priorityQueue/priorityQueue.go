@@ -87,13 +87,13 @@ func (pq *PriorityQueue[T]) Update(val T, priority int) {
 	var item *Item = nil
 
 	for _, i := range pq.h {
-		if i.value.(T) == val{
+		if i.value.(T) == val {
 			item = i
 			break
 		}
 	}
 
-	if item != nil{
+	if item != nil {
 		item.value = val
 		item.priority = priority
 		heap.Fix(&pq.h, item.index)
@@ -104,7 +104,7 @@ func (pq *PriorityQueue[T]) Update(val T, priority int) {
 func (pq *PriorityQueue[T]) Remove(val T) {
 	n := NewPriorityQueue[T]()
 	for _, i := range pq.h {
-		if i.value.(T) != val{
+		if i.value.(T) != val {
 			n.Push(i.value.(T), i.priority)
 		}
 	}
