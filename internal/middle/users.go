@@ -6,8 +6,8 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
 	"github.com/khorcarol/AgentOfThings/internal/personal"
-	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 	"github.com/khorcarol/AgentOfThings/internal/storage"
+	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 )
 
 var (
@@ -22,7 +22,7 @@ var (
 // Retrieve friends from storage
 func init() {
 	loadedFriends, err := storage.LoadFriends()
-	if err == nil{
+	if err == nil {
 		friends = loadedFriends
 	}
 }
@@ -45,7 +45,6 @@ func scoreUser(user api.User) int {
 	return score
 }
 
-
 // Sets the user to seen
 func setUserSeen(id api.ID, val bool) {
 	u, t := users[id]
@@ -55,9 +54,9 @@ func setUserSeen(id api.ID, val bool) {
 	}
 }
 
-func getUserList() []api.User{
+func getUserList() []api.User {
 	res := []api.User{}
-	for _, e := range ranked_users.To_list(){
+	for _, e := range ranked_users.To_list() {
 		res = append(res, users[e])
 	}
 	return res
@@ -91,7 +90,6 @@ func updateCommonInterests(userID api.ID, interests []api.Interest) {
 	common_interests[userID] = common
 }
 
-
 // Adds a new user to users
 func discoverUser() {
 	cmgr, err := connection.GetCMGR()
@@ -112,7 +110,6 @@ func discoverUser() {
 	}
 }
 
-
 // Recieve response from (our) sent friend request
 func friendResonse() {
 	cmgr, err := connection.GetCMGR()
@@ -131,7 +128,6 @@ func friendResonse() {
 		ext_friend_requests[friend_res.User.UserID] = friend_res
 	}
 }
-
 
 // Recieve a friend request from another user
 func extFriendRequest() {

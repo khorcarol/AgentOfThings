@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	appDirName      = "AgentOfThings"
+	appDirName      = "agentofthings"
 	friendsFileName = "friends.json"
 )
 
@@ -85,7 +85,7 @@ func SaveFriend(friend api.Friend) error {
 
 	filePath := filepath.Join(storageDir, friendsFileName)
 	data, err := os.ReadFile(filePath)
-	
+
 	fjm := make(map[api.ID]FriendJson)
 
 	if err != nil {
@@ -93,9 +93,9 @@ func SaveFriend(friend api.Friend) error {
 	} else if err := json.Unmarshal(data, &fjm); err != nil {
 		return fmt.Errorf("failed to unmarshal friends data: %w", err)
 	}
-	
+
 	fjm[friend.User.UserID] = friendToFriendJson(friend)
-	
+
 	wdata, err := json.MarshalIndent(fjm, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal friends data: %w", err)
@@ -125,12 +125,11 @@ func LoadFriends() (map[api.ID]api.Friend, error) {
 		return nil, fmt.Errorf("failed to read friends data from file: %w", err)
 	}
 
-
 	var fjs map[api.ID]FriendJson
 	if err := json.Unmarshal(data, &fjs); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal friends data: %w", err)
 	}
-	
+
 	friends := make(map[api.ID]api.Friend)
 	for id, fj := range fjs {
 		friends[id] = friendJsonToFriend(fj)
