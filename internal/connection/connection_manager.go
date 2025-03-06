@@ -20,18 +20,12 @@ import (
 
 type peerLevel int
 
-const (
-	Peer = iota
-	User
-	Friend
-)
-
 type ConnectionManager struct {
 	mDNSservice    mdns.Service
 	peerAddrChan   <-chan peer.AddrInfo
 	host           host.Host
 	peersMutex     sync.Mutex
-	connectedPeers map[peer.ID]peerLevel
+	connectedPeers map[peer.ID]struct{}
 	uuids          map[uuid.UUID]peer.ID
 
 	// B->M, sends a new discovered user
@@ -52,7 +46,7 @@ func (cmgr *ConnectionManager) peerConnectWrapper() func(network.Network, networ
 	return func(n network.Network, c network.Conn) {
 		cmgr.peersMutex.Lock()
 		defer cmgr.peersMutex.Unlock()
-		cmgr.connectedPeers[c.RemotePeer()] = Peer
+		cmgr.connectedPeers[c.RemotePeer()] = struct{}{}
 	}
 }
 
@@ -63,7 +57,7 @@ func initConnectionManager() (*ConnectionManager, error) {
 		return nil, err
 	}
 	cmgr.host = _self
-	cmgr.connectedPeers = make(map[peer.ID]peerLevel)
+	cmgr.connectedPeers = make(map[peer.ID]struct{})
 	cmgr.uuids = make(map[uuid.UUID]peer.ID)
 	cmgr.IncomingUsers = make(chan api.User, 10)
 	cmgr.IncomingFriendRequest = make(chan api.Friend, 10)
@@ -102,10 +96,9 @@ func (cmgr *ConnectionManager) addIncomingUser(msg *api.User, id peer.ID) {
 	cmgr.peersMutex.Lock()
 	defer cmgr.peersMutex.Unlock()
 	cmgr.uuids[msg.UserID.Address] = id
-	cmgr.connectedPeers[id] = User
+	cmgr.connectedPeers[id] = struct{}{}
 	cmgr.IncomingUsers <- *msg
 }
-
 
 // SendFriendRequest sends a friend request by calling the friend protocol layer.
 // Application logic (i.e. middle) should handle if this friend is to be displayed or stored.
@@ -116,7 +109,6 @@ func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.Friend)
 	}
 
 	return user_to_friend.SendFriendData(cmgr.host, context.Background(), peerID, data)
-
 }
 
 func (cmgr *ConnectionManager) waitOnPeer(wg *sync.WaitGroup) {
@@ -144,7 +136,7 @@ func (cmgr *ConnectionManager) peerToUserHandshake(peerAddr peer.AddrInfo, wg *s
 	cmgr.peersMutex.Lock()
 	defer cmgr.peersMutex.Unlock()
 	cmgr.uuids[msg.UserID.Address] = peerAddr.ID
-	cmgr.connectedPeers[peerAddr.ID] = User
+	cmgr.connectedPeers[peerAddr.ID] = struct{}{}
 	cmgr.IncomingUsers <- *msg
 	return nil
 }
