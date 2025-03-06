@@ -70,6 +70,20 @@ func getFriendList() []api.Friend {
 	return res
 }
 
+func getFriendRequests() ([]api.User, []api.User) {
+	in := []api.User{}
+	out := []api.User{}
+
+	for _, v := range friend_requests {
+		out = append(out, v)
+	}
+
+	for _, v := range ext_friend_requests {
+		in = append(in, v.User)
+	}
+	return in, out
+}
+
 // Updates (or creates) entry for common interests
 func updateCommonInterests(userID api.ID, interests []api.Interest) {
 	self_interests := personal.GetSelf().User.Interests
@@ -98,38 +112,49 @@ func discoverUser() {
 	}
 	user := <-cmgr.IncomingUsers
 
-	// TODO: Check if stored friend
-	_, ok := friends[user.UserID]
-	if !ok {
-		users[user.UserID] = user
+	users[user.UserID] = user
 
-		updateCommonInterests(user.UserID, user.Interests)
-		ranked_users.Push(user.UserID, scoreUser(user))
+	updateCommonInterests(user.UserID, user.Interests)
+	ranked_users.Push(user.UserID, scoreUser(user))
 
-		frontend_functions.user_refresh(getUserList())
-	}
+	frontend_functions.user_refresh(getUserList())
 }
 
 // Recieve response from (our) sent friend request
-func friendResonse() {
+func waitOnFriendRequest() {
 	cmgr, err := connection.GetCMGR()
 	if err != nil {
 		log.Fatal(err)
 	}
 	friend_res := <-cmgr.IncomingFriendRequest
-	// The refactor here is that friend requests can't be rejected, you can just hang indefinitely.
-	_, ok := friend_requests[friend_res.User.UserID]
-	if ok {
-		friends[friend_res.User.UserID] = friend_res
-		delete(friend_requests, friend_res.User.UserID)
-		frontend_functions.friend_refresh(getFriendList())
-		// TODO: Tell user that friend requests have been accepted
-	} else {
-		ext_friend_requests[friend_res.User.UserID] = friend_res
-	}
-}
 
-// Recieve a friend request from another user
-func extFriendRequest() {
-	// TODO: Finish external friend requests
+	// check whether we are receiving a response or request
+	// TODO: Handle OLD requests/responses
+	_, ok := friend_requests[friend_res.Friend.User.UserID]
+	if ok {
+		// this is a response to a friend request that we sent out
+		// check if it is acceptance or rejection
+		if friend_res.Accepted {
+			// if accepted, set as friend and remove from requests
+			friends[friend_res.Friend.User.UserID] = friend_res.Friend
+			frontend_functions.friend_refresh(getFriendList())
+		} else {
+			// if rejected, set as user and remove from requests
+			users[friend_res.Friend.User.UserID] = ext_friend_requests[friend_res.Friend.User.UserID].User
+			ranked_users.Push(friend_res.Friend.User.UserID, scoreUser(friend_res.Friend.User))
+			frontend_functions.user_refresh(getUserList())
+		}
+		frontend_functions.fr_refresh(getFriendRequests())
+		delete(friend_requests, friend_res.Friend.User.UserID)
+	} else {
+		// this is a new incoming friend request
+		delete(users, friend_res.Friend.User.UserID)
+		ranked_users.Remove(friend_res.Friend.User.UserID)
+
+
+		ext_friend_requests[friend_res.Friend.User.UserID] = friend_res.Friend
+
+		frontend_functions.fr_refresh(getFriendRequests())
+		frontend_functions.user_refresh(getUserList())
+	}
 }

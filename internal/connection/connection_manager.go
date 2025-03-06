@@ -9,7 +9,7 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection/discovery"
 	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/handshake/peer_to_user"
-	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/user_to_friend"
+	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/handshake/user_to_friend"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -20,24 +20,18 @@ import (
 
 type peerLevel int
 
-const (
-	Peer = iota
-	User
-	Friend
-)
-
 type ConnectionManager struct {
 	mDNSservice    mdns.Service
 	peerAddrChan   <-chan peer.AddrInfo
 	host           host.Host
 	peersMutex     sync.Mutex
-	connectedPeers map[peer.ID]peerLevel
+	connectedPeers map[peer.ID]struct{}
 	uuids          map[uuid.UUID]peer.ID
 
 	// B->M, sends a new discovered user
 	IncomingUsers chan api.User
 	// B->M, sends an external friend request to respond to
-	IncomingFriendRequest chan api.Friend
+	IncomingFriendRequest chan api.FriendRequest
 }
 
 func (cmgr *ConnectionManager) peerDisconnectWrapper() func(network.Network, network.Conn) {
@@ -52,7 +46,7 @@ func (cmgr *ConnectionManager) peerConnectWrapper() func(network.Network, networ
 	return func(n network.Network, c network.Conn) {
 		cmgr.peersMutex.Lock()
 		defer cmgr.peersMutex.Unlock()
-		cmgr.connectedPeers[c.RemotePeer()] = Peer
+		cmgr.connectedPeers[c.RemotePeer()] = struct{}{}
 	}
 }
 
@@ -63,10 +57,10 @@ func initConnectionManager() (*ConnectionManager, error) {
 		return nil, err
 	}
 	cmgr.host = _self
-	cmgr.connectedPeers = make(map[peer.ID]peerLevel)
+	cmgr.connectedPeers = make(map[peer.ID]struct{})
 	cmgr.uuids = make(map[uuid.UUID]peer.ID)
 	cmgr.IncomingUsers = make(chan api.User, 10)
-	cmgr.IncomingFriendRequest = make(chan api.Friend, 10)
+	cmgr.IncomingFriendRequest = make(chan api.FriendRequest, 10)
 
 	// register disconnect protocol
 	cmgr.host.Network().Notify(&network.NotifyBundle{
@@ -81,7 +75,7 @@ func initConnectionManager() (*ConnectionManager, error) {
 		})
 	cmgr.host.SetStreamHandler(protocol.ID(user_to_friend.FriendRequestProtocolID),
 		func(stream network.Stream) {
-			user_to_friend.FriendRequestHandler(stream, func(f *api.Friend, pid peer.ID) {
+			user_to_friend.FriendRequestHandler(stream, func(f *api.FriendRequest, pid peer.ID) {
 				// Pass friend data to middle.
 				cmgr.IncomingFriendRequest <- *f
 			})
@@ -102,21 +96,19 @@ func (cmgr *ConnectionManager) addIncomingUser(msg *api.User, id peer.ID) {
 	cmgr.peersMutex.Lock()
 	defer cmgr.peersMutex.Unlock()
 	cmgr.uuids[msg.UserID.Address] = id
-	cmgr.connectedPeers[id] = User
+	cmgr.connectedPeers[id] = struct{}{}
 	cmgr.IncomingUsers <- *msg
 }
 
-
 // SendFriendRequest sends a friend request by calling the friend protocol layer.
 // Application logic (i.e. middle) should handle if this friend is to be displayed or stored.
-func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.Friend) error {
-	peerID, ok := cmgr.uuids[data.User.UserID.Address]
+func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.FriendRequest) error {
+	peerID, ok := cmgr.uuids[data.Friend.User.UserID.Address]
 	if !ok {
 		return nil
 	}
 
 	return user_to_friend.SendFriendData(cmgr.host, context.Background(), peerID, data)
-
 }
 
 func (cmgr *ConnectionManager) waitOnPeer(wg *sync.WaitGroup) {
@@ -144,7 +136,7 @@ func (cmgr *ConnectionManager) peerToUserHandshake(peerAddr peer.AddrInfo, wg *s
 	cmgr.peersMutex.Lock()
 	defer cmgr.peersMutex.Unlock()
 	cmgr.uuids[msg.UserID.Address] = peerAddr.ID
-	cmgr.connectedPeers[peerAddr.ID] = User
+	cmgr.connectedPeers[peerAddr.ID] = struct{}{}
 	cmgr.IncomingUsers <- *msg
 	return nil
 }
