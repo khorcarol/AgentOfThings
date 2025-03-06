@@ -17,16 +17,11 @@ const (
 
 // dirProvider interface for getting system directories
 type dirProvider interface {
-	GetHomeDir() (string, error)
 	GetConfigDir() (string, error)
 }
 
 // defaultDirProvider implements dirProvider
 type defaultDirProvider struct{}
-
-func (p defaultDirProvider) GetHomeDir() (string, error) {
-	return os.UserHomeDir()
-}
 
 func (p defaultDirProvider) GetConfigDir() (string, error) {
 	return os.UserConfigDir()
@@ -73,7 +68,7 @@ func SaveFriends(friends map[api.ID]api.Friend) error {
 		return fmt.Errorf("failed to write friends data to file: %w", err)
 	}
 
-	log.Fatalf("SAVED FILE")
+	log.Printf("SAVED FILE")
 	return nil
 }
 
