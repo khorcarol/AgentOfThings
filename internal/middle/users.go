@@ -95,15 +95,16 @@ func discoverUser() {
 	user := <-cmgr.IncomingUsers
 
 	// TODO: Check if stored friend
-		if _, ok := users[user.UserID]; !ok {
-			users[user.UserID] = user
+	if _, ok := users[user.UserID]; !ok {
+		users[user.UserID] = user
 
-			updateCommonInterests(user.UserID, user.Interests)
-			ranked_users.Push(user.UserID, scoreUser(user))
+		updateCommonInterests(user.UserID, user.Interests)
+		ranked_users.Push(user.UserID, scoreUser(user))
 
-			frontend_functions.user_refresh(getUserList())
-		}
+		frontend_functions.user_refresh(getUserList())
+	}
 }
+
 // Recieve response from (our) sent friend request
 func waitOnFriendRequest() {
 	cmgr, err := connection.GetCMGR()

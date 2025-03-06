@@ -40,12 +40,12 @@ func GetFriends() []api.Friend {
 	return ret
 }
 
-func SendFriendRequest(userID api.ID) {
+func SendFriendRequest(userID api.ID, accept bool) {
 	user, ok := users[userID]
 	if !ok {
 		log.Printf("Error: User %v not in user list.", userID)
 		return
-  }
+	}
 
 	cmgr, err := connection.GetCMGR()
 	if err != nil {
@@ -61,9 +61,8 @@ func SendFriendRequest(userID api.ID) {
 	cmgr.SendFriendRequest(user, fr)
 
 	// this has to be different depending on whether we are sending a request or response
-	_, ok := users[userID]
 
-	if ok {
+	if _, ok := users[userID]; ok {
 		// sending out a new request
 		delete(users, userID)
 		ranked_users.Remove(userID)

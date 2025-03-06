@@ -11,7 +11,7 @@ func Start() {
 
 	go func() {
 		for {
-			friendResonse() // blocks on [IncomingFriendRequest] channel from cmgr.
+			waitOnFriendRequest() // blocks on [IncomingFriendRequest] channel from cmgr.
 		}
 	}()
 
