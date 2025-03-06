@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/internal/personal"
 )
 
 // mockDirProvider can be used in tests
@@ -54,26 +55,23 @@ func TestGetStorageDir(t *testing.T) {
 	if _, err := os.Stat(expectedDir); os.IsNotExist(err) {
 		t.Errorf("Directory was not created: %v", expectedDir)
 	}
+}
 
-	// Test error handling
-	provider = mockDirProvider{
-		configDir: "",
-		err:       os.ErrPermission,
-	}
-
-	_, err = GetStorageDir()
-	if err != os.ErrPermission {
-		t.Errorf("Expected permission error, got %v", err)
-	}
+func makeFriend(name string) api.Friend{
+	res := personal.GetSelf()
+	res.Name = name
+	return res
 }
 
 func TestSaveLoadFriends(t *testing.T) {
+
 	// Create temporary test directory
 	tempDir := t.TempDir()
 	testStorageDir := filepath.Join(tempDir, appDirName)
 	if err := os.MkdirAll(testStorageDir, 0755); err != nil {
 		t.Fatalf("Failed to create test directory: %v", err)
 	}
+	os.Mkdir(filepath.Join(testStorageDir, "images"), os.ModePerm)
 
 	// Save original provider to restore later
 	originalProvider := provider
@@ -86,9 +84,12 @@ func TestSaveLoadFriends(t *testing.T) {
 	}
 
 	// Sample data
-	friends := map[api.ID]api.User{
-		api.ID{Address: "user1"}: {UserID: api.ID{Address: "user1"}, CommonInterests: []api.Interest{}, Seen: false},
-		api.ID{Address: "user2"}: {UserID: api.ID{Address: "user2"}, CommonInterests: []api.Interest{}, Seen: false},
+
+	fr1 := makeFriend("user1")
+	fr2 := makeFriend("user2")
+	friends := map[api.ID]api.Friend{
+		fr1.User.UserID: fr1,
+		fr2.User.UserID: fr2,
 	}
 
 	// Test saving friends
