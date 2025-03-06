@@ -22,10 +22,7 @@ var (
 // Retrieve friends from storage
 func init() {
 	loadedFriends, err := storage.LoadFriends()
-	if err != nil {
-		// Load fails -> use empty map
-		friends = make(map[api.ID]api.User)
-	} else {
+	if err == nil{
 		friends = loadedFriends
 	}
 }
@@ -34,7 +31,7 @@ func saveFriends() {
 	_ = storage.SaveFriends(friends)
 }
 
-func AddFriend(id api.ID, user api.User) {
+func AddFriend(id api.ID, user api.Friend) {
 	friends[id] = user
 	saveFriends()
 }

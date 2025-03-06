@@ -32,7 +32,7 @@ func getCandidatePaths() []string {
 	if cachePath, err := os.UserCacheDir(); err == nil {
 		paths = append(paths, filepath.Join(cachePath, "AgentOfThings", "profile", "profilePicture.png"))
 	}
-	paths = append(paths, "assets/blank-profile.png")
+	paths = append(paths, filepath.Join("assets", "blank-profile.png"))
 	return paths
 }
 

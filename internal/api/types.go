@@ -31,3 +31,8 @@ type Friend struct {
 type ID struct {
 	Address uuid.UUID
 }
+
+
+func (id ID) String() string {
+	return id.Address.String()
+}
