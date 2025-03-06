@@ -41,13 +41,14 @@ func GetFriends() []api.Friend {
 }
 
 func SendFriendRequest(userID api.ID, accept bool) {
-	user, err := users[userID]
-	if !err {
-		log.Printf("Error: User not in user list%t", err)
+	user, ok := users[userID]
+	if !ok {
+		log.Printf("Error: User %v not in user list.", userID)
+		return
 	}
 
-	cmgr, err2 := connection.GetCMGR()
-	if err2 != nil {
+	cmgr, err := connection.GetCMGR()
+	if err != nil {
 		log.Fatal(err)
 	}
 	// [self] is a package variable, see users.go.
@@ -60,9 +61,8 @@ func SendFriendRequest(userID api.ID, accept bool) {
 	cmgr.SendFriendRequest(user, fr)
 
 	// this has to be different depending on whether we are sending a request or response
-	_, ok := users[userID]
 
-	if ok {
+	if _, ok := users[userID]; ok {
 		// sending out a new request
 		delete(users, userID)
 		ranked_users.Remove(userID)

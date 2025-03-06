@@ -154,8 +154,17 @@ func (cmgr *ConnectionManager) connectToPeer(peerAddr peer.AddrInfo, wg *sync.Wa
 	if err := cmgr.host.Connect(context.Background(), peerAddr); err != nil {
 		log.Fatal("Failed to connect to new peer", err)
 	}
-	// cmgr.connectedPeers[peerAddr.ID] = Peer
 
 	// handshake to promote peer to user
 	go cmgr.peerToUserHandshake(peerAddr, wg)
+}
+
+func (cmgr *ConnectionManager) StartDiscovery() {
+	go func() {
+		var wg sync.WaitGroup
+		for peerAddr := range cmgr.peerAddrChan {
+			wg.Add(1)
+			go cmgr.connectToPeer(peerAddr, &wg)
+		}
+	}()
 }

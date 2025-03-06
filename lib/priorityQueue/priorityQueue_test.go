@@ -79,7 +79,7 @@ func Test_updates_item(t *testing.T) {
 	v1 := pq.Pop().GetVal()
 	v2 := pq.Pop().GetVal()
 	v3 := pq.Pop().GetVal()
-	
+
 	if v1 != 2 {
 		t.Errorf("Fail on %s: First pop meant to be 2, got: %d", t.Name(), v1)
 	}
