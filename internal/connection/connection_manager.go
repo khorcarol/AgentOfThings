@@ -66,7 +66,6 @@ func initConnectionManager() (*ConnectionManager, error) {
 	cmgr.connectedPeers = make(map[peer.ID]peerLevel)
 	cmgr.uuids = make(map[uuid.UUID]peer.ID)
 	cmgr.IncomingUsers = make(chan api.User, 10)
-	cmgr.IncomingFriendResponse = make(chan api.FriendResponse, 10)
 	cmgr.IncomingFriendRequest = make(chan api.Friend, 10)
 
 	// register disconnect protocol
