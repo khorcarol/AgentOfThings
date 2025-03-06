@@ -5,12 +5,9 @@ package frontend
 
 import (
 	// "time"
-	"image"
+
 	"image/color"
 	"log"
-	"os"
-
-	"github.com/google/uuid"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -314,86 +311,6 @@ func Main() {
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	myWindow.SetContent(tabs)
-
-	// temp, until real friends used
-	reader, err := os.Open("assets/blank-profile.png")
-	if err != nil {
-		log.Fatal(err)
-	}
-	img, _, err := image.Decode(reader)
-	if err != nil {
-		log.Print(err)
-	}
-	var image = "https://i.scdn.co/image/ab67616d0000b273b579560ed2e5acaf7a129f82"
-	onRefreshUsers([]api.User{
-		{
-			UserID: api.ID{Address: uuid.Nil},
-			Interests: []api.Interest{
-				{Category: 1, Description: "Basketball", Image: &image},
-				{Category: 2, Description: "Jazz"},
-			},
-			Seen: false,
-		},
-		{
-			UserID: api.ID{Address: uuid.Nil},
-			Interests: []api.Interest{
-				{Category: 1, Description: "Basketball", Image: &image},
-				{Category: 2, Description: "Jazz"},
-			},
-			Seen: false,
-		},
-	})
-
-	onRefreshFriends([]api.Friend{
-		{
-			User: api.User{
-				UserID:    api.ID{Address: uuid.Nil},
-				Interests: []api.Interest{{Category: 1, Description: "description"}},
-			},
-			Name:  "Friend",
-			Photo: img,
-		},
-	})
-
-	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest)
-
-	onRefreshIncomingFriendRequests([]api.User{
-		{
-			UserID: api.ID{Address: uuid.Nil},
-			Interests: []api.Interest{
-				{Category: 1, Description: "Basketball", Image: &image},
-				{Category: 2, Description: "Jazz"},
-			},
-			Seen: false,
-		},
-		{
-			UserID: api.ID{Address: uuid.Nil},
-			Interests: []api.Interest{
-				{Category: 1, Description: "Basketball", Image: &image},
-				{Category: 2, Description: "Jazz"},
-			},
-			Seen: false,
-		},
-	})
-
-	onRefreshOutgoingFriendRequests([]api.User{
-		{
-			UserID: api.ID{Address: uuid.Nil},
-			Interests: []api.Interest{
-				{Category: 1, Description: "Basketball", Image: &image},
-				{Category: 2, Description: "Jazz"},
-			},
-			Seen: false,
-		},
-		{
-			UserID: api.ID{Address: uuid.Nil},
-			Interests: []api.Interest{
-				{Category: 1, Description: "Basketball", Image: &image},
-				{Category: 2, Description: "Jazz"},
-			},
-			Seen: false,
-		},
-	})
 
 	myWindow.ShowAndRun()
 }
