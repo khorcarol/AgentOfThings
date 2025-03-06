@@ -18,7 +18,7 @@ const FriendRequestProtocolID = "agentofthings/friend_request/0.0.1"
 
 // SendFriendData opens a stream to send friend-related data (either a request or a response),
 // writes the data, half-closes the stream, and returns any error received.
-func SendFriendData(host host.Host, ctx context.Context, remote peer.ID, friendData api.Friend) error {
+func SendFriendData(host host.Host, ctx context.Context, remote peer.ID, friendData api.FriendRequest) error {
 	stream, err := host.NewStream(ctx, remote, protocol.ID(FriendRequestProtocolID))
 	if err != nil {
 		return fmt.Errorf("friend data: failed to open stream to peer %s: %w", remote, err)
@@ -41,10 +41,10 @@ func SendFriendData(host host.Host, ctx context.Context, remote peer.ID, friendD
 // FriendRequestHandler handles incoming friend data over the friend protocol.
 // It decodes the data into an api.Friend and then passes it along via callback.
 // The [callback] function should decide if this friend is to be displayed or stored.
-func FriendRequestHandler(stream network.Stream, callback func(*api.Friend, peer.ID)) {
+func FriendRequestHandler(stream network.Stream, callback func(*api.FriendRequest, peer.ID)) {
 	defer stream.Close()
 
-	var incomingFriend api.Friend
+	var incomingFriend api.FriendRequest
 	if err := transport.DecodeFromStream(stream, &incomingFriend); err != nil {
 		log.Printf("friend data handler: failed to decode friend data: %v", err)
 		stream.Reset()

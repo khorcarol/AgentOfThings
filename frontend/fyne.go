@@ -1,4 +1,5 @@
-//go:generate fyne bundle -o bundled.go --package frontend Inter_24pt-Bold.ttf
+//go:generate fyne bundle -o bundled.go --package frontend ../assets/Inter_24pt-Bold.ttf
+//go:generate fyne bundle -o bundled.go --package frontend --append ../assets/blank-profile.png
 
 package frontend
 
@@ -161,7 +162,7 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 	var userDetailsDialog dialog.Dialog
 
 	sendBtn := widget.NewButton("Send Friend Request", func() {
-		middle.SendFriendRequest(user.UserID)
+		middle.SendFriendRequest(user.UserID, true)
 		dialog.ShowInformation("Request Sent", "Friend request sent!", parent)
 	})
 	closeBtn := widget.NewButton("Close", func() {

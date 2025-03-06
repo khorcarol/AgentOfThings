@@ -31,3 +31,9 @@ type Friend struct {
 type ID struct {
 	Address uuid.UUID
 }
+
+type FriendRequest struct {
+	Friend   Friend
+	IsOld    bool
+	Accepted bool
+}
