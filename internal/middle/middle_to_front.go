@@ -13,11 +13,11 @@ type FrontEndFunctions struct {
 	user_refresh func(users []api.User)
 }
 
-var frontendfunctions FrontEndFunctions
+var frontend_functions FrontEndFunctions
 
 func Pass(refreshfriends  func(friends []api.Friend), refreshusers func(users []api.User) ){
-	frontendfunctions.friend_refresh = refreshfriends
-	frontendfunctions.user_refresh = refreshusers
+	frontend_functions.friend_refresh = refreshfriends
+	frontend_functions.user_refresh = refreshusers
 }
 
 func CommonInterests(userID api.ID) []api.Interest {
