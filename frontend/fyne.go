@@ -1,4 +1,5 @@
-//go:generate fyne bundle -o bundled.go --package frontend Inter_24pt-Bold.ttf
+//go:generate fyne bundle -o bundled.go --package frontend ../assets/Inter_24pt-Bold.ttf
+//go:generate fyne bundle -o bundled.go --package frontend --append ../assets/blank-profile.png
 
 package frontend
 
