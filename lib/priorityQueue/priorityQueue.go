@@ -13,7 +13,7 @@ type Item struct {
 
 type tHeap []*Item
 
-type PriorityQueue[T any] struct {
+type PriorityQueue[T comparable] struct {
 	h      tHeap
 	length int
 }
@@ -50,7 +50,7 @@ func (h tHeap) Swap(i int, j int) {
 
 // Priority Queue Functions
 
-func NewPriorityQueue[T any]() PriorityQueue[T] {
+func NewPriorityQueue[T comparable]() PriorityQueue[T] {
 
 	h := make(tHeap, 0)
 	heap.Init(&h)
@@ -75,12 +75,41 @@ func (pq *PriorityQueue[T]) Pop() option.Option[T] {
 	if pq.length == 0 {
 		return option.OptionNil[T]()
 	}
-
 	v := heap.Pop(&pq.h).(*Item)
 
 	pq.length--
 	return option.OptionVal(v.value.(T))
 
+}
+
+// Updates the first item in the priority queue with item.value=val
+func (pq *PriorityQueue[T]) Update(val T, priority int) {
+	var item *Item = nil
+
+	for _, i := range pq.h {
+		if i.value.(T) == val{
+			item = i
+			break
+		}
+	}
+
+	if item != nil{
+		item.value = val
+		item.priority = priority
+		heap.Fix(&pq.h, item.index)
+	}
+}
+
+// Removes the first item with value val
+func (pq *PriorityQueue[T]) Remove(val T) {
+	n := NewPriorityQueue[T]()
+	for _, i := range pq.h {
+		if i.value.(T) != val{
+			n.Push(i.value.(T), i.priority)
+		}
+	}
+
+	*pq = n
 }
 
 func (pq PriorityQueue[T]) To_list() []T {

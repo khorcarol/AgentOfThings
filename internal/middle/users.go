@@ -5,6 +5,7 @@ import (
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
+	"github.com/khorcarol/AgentOfThings/internal/personal"
 	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 )
 
@@ -13,6 +14,9 @@ var (
 	friend_requests     = make(map[api.ID]api.User)
 	ext_friend_requests = make(map[api.ID]api.Friend)
 	friends             = make(map[api.ID]api.Friend)
+	common_interests    = make(map[api.ID]([]api.Interest))
+	ranked_users        = priorityQueue.NewPriorityQueue[api.ID]()
+
 )
 
 // Assigns a score to a user, based on number of matches
@@ -24,22 +28,6 @@ func scoreUser(user api.User) int {
 	return score
 }
 
-// Returns a list of users in order of their score
-func rankUsers() []api.User {
-	pq := priorityQueue.NewPriorityQueue[api.User]()
-
-	for id, user := range users {
-		_, ok := friends[id]
-		if ok {
-			continue
-		}
-		score := scoreUser(user)
-
-		pq.Push(user, score)
-	}
-
-	return pq.To_list()
-}
 
 // Sets the user to seen
 func setUserSeen(id api.ID, val bool) {
@@ -50,6 +38,28 @@ func setUserSeen(id api.ID, val bool) {
 	}
 }
 
+
+// Updates (or creates) entry for common interests
+func updateCommonInterests(userID api.ID, interests []api.Interest) {
+	self_interests := personal.GetSelf().User.Interests
+
+	int_map := make(map[api.Interest]bool)
+	common := []api.Interest{}
+
+	for _, e1 := range self_interests {
+		int_map[e1] = true
+	}
+
+	for _, e2 := range interests {
+		if int_map[e2] {
+			common = append(common, e2)
+		}
+	}
+
+	common_interests[userID] = common
+}
+
+
 // Adds a new user to users
 func discoverUser() {
 	cmgr, err := connection.GetCMGR()
@@ -57,9 +67,15 @@ func discoverUser() {
 		log.Fatal(err)
 	}
 	user := <-cmgr.IncomingUsers
+
+	// TODO: Check if stored friend
+
 	users[user.UserID] = user
-	// TODO: find common interests
+
+	updateCommonInterests(user.UserID, user.Interests)
+	ranked_users.Push(user.UserID, scoreUser(user))
 }
+
 
 // Recieve response from (our) sent friend request
 func friendResonse() {
@@ -78,6 +94,7 @@ func friendResonse() {
 		ext_friend_requests[friend_res.User.UserID] = friend_res
 	}
 }
+
 
 // Recieve a friend request from another user
 func extFriendRequest() {

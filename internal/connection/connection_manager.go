@@ -106,6 +106,7 @@ func (cmgr *ConnectionManager) addIncomingUser(msg *api.User, id peer.ID) {
 	cmgr.IncomingUsers <- *msg
 }
 
+
 // SendFriendRequest sends a friend request by calling the friend protocol layer.
 // Application logic (i.e. middle) should handle if this friend is to be displayed or stored.
 func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.Friend) error {
@@ -115,6 +116,7 @@ func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.Friend)
 	}
 
 	return user_to_friend.SendFriendData(cmgr.host, context.Background(), peerID, data)
+
 }
 
 func (cmgr *ConnectionManager) waitOnPeer(wg *sync.WaitGroup) {
