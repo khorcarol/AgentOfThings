@@ -39,29 +39,10 @@ func SendFriendRequest(userID api.ID) {
 		log.Fatal(err)
 	}
 	// [self] is a package variable, see users.go.
-	cmgr.SendFriendRequest(userID, personal.GetSelf())
+	cmgr.SendFriendRequest(user, personal.GetSelf())
 
 	delete(users, userID)
 	ranked_users.Remove(userID)
 	friend_requests[userID] = user
 }
 
-// Respond to external friend request
-func ExtFriendResponse(userID api.ID, accept bool) {
-	cmgr, err := connection.GetCMGR()
-	if err != nil {
-		log.Printf("Error: Friend response not in ext_friend_requests %b", err)
-	}
-
-	cmgr.SendFriendResponse(userID, accept)
-
-	if accept {
-		friend, err2 := ext_friend_requests[userID]
-		if !err2{
-			log.Fatal(err2)
-		}
-		delete(users, userID)
-		ranked_users.Remove(userID)
-		friends[userID] = friend 
-	}
-}
