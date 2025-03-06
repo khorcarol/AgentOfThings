@@ -11,7 +11,7 @@ import (
 var (
 	users               = make(map[api.ID]api.User)
 	friend_requests     = make(map[api.ID]api.User)
-	ext_friend_requests = make(map[api.ID]api.User)
+	ext_friend_requests = make(map[api.ID]api.Friend)
 	friends             = make(map[api.ID]api.Friend)
 )
 
@@ -69,8 +69,14 @@ func friendResonse() {
 	}
 	friend_res := <-cmgr.IncomingFriendRequest
 	// The refactor here is that friend requests can't be rejected, you can just hang indefinitely.
-	friends[friend_res.User.UserID] = friend_res
-	delete(friend_requests, friend_res.User.UserID)
+	_, ok := friend_requests[friend_res.User.UserID]
+	if ok {
+		friends[friend_res.User.UserID] = friend_res
+		delete(friend_requests, friend_res.User.UserID)
+		// TODO: Tell user that friend requests have been accepted
+	} else {
+		ext_friend_requests[friend_res.User.UserID] = friend_res
+	}
 }
 
 // Recieve a friend request from another user

@@ -18,7 +18,7 @@ const FriendRequestProtocolID = "agentofthings/friend_request/0.0.1"
 
 // SendFriendData opens a stream to send friend-related data (either a request or a response),
 // writes the data, half-closes the stream, and returns any error received.
-func SendFriendData(host host.Host, ctx context.Context, remote peer.ID, friendData any) error {
+func SendFriendData(host host.Host, ctx context.Context, remote peer.ID, friendData api.Friend) error {
 	stream, err := host.NewStream(ctx, remote, protocol.ID(FriendRequestProtocolID))
 	if err != nil {
 		return fmt.Errorf("friend data: failed to open stream to peer %s: %w", remote, err)
