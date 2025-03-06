@@ -112,23 +112,30 @@ func waitOnFriendRequest() {
 	}
 	friend_res := <-cmgr.IncomingFriendRequest
 
-	// The refactor here is that friend requests can't be rejected, you can just hang indefinitely.
-	_, ok := friend_requests[friend_res.User.UserID]
+	// check whether we are receiving a response or request
+	// TODO: Handle OLD requests/responses
+	_, ok := friend_requests[friend_res.Friend.User.UserID]
 	if ok {
 		// this is a response to a friend request that we sent out
-		friends[friend_res.User.UserID] = friend_res
-		delete(friend_requests, friend_res.User.UserID)
-
-		frontend_functions.friend_refresh(getFriendList())
+		// check if it is acceptance or rejection
+		if friend_res.Accepted {
+			// if accepted, set as friend and remove from requests
+			friends[friend_res.Friend.User.UserID] = friend_res.Friend
+			frontend_functions.friend_refresh(getFriendList())
+		} else {
+			// if rejected, set as user and remove from requests
+			users[friend_res.Friend.User.UserID] = ext_friend_requests[friend_res.Friend.User.UserID].User
+			ranked_users.Push(friend_res.Friend.User.UserID, scoreUser(friend_res.Friend.User))
+			frontend_functions.user_refresh(getUserList())
+		}
 		frontend_functions.fr_refresh(getFriendRequests())
-
-		// TODO: Tell user that friend requests have been accepted
+		delete(friend_requests, friend_res.Friend.User.UserID)
 	} else {
 		// this is a new incoming friend request
-		delete(users, friend_res.User.UserID)
-		ranked_users.Remove(friend_res.User.UserID)
+		delete(users, friend_res.Friend.User.UserID)
+		ranked_users.Remove(friend_res.Friend.User.UserID)
 
-		ext_friend_requests[friend_res.User.UserID] = friend_res
+		ext_friend_requests[friend_res.Friend.User.UserID] = friend_res.Friend
 
 		frontend_functions.fr_refresh(getFriendRequests())
 		frontend_functions.user_refresh(getUserList())
