@@ -1,9 +1,10 @@
 package api
 
 import (
+	"image"
+
 	"github.com/google/uuid"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
-	"image"
 )
 
 // A [interests.InterestCategory] and a string to represent the data.
@@ -29,11 +30,4 @@ type Friend struct {
 
 type ID struct {
 	Address uuid.UUID
-}
-
-// Response to an external friend request
-type FriendResponse struct {
-	UserID ID // The peer to respond to
-	Accept bool
-	Data   Friend
 }
