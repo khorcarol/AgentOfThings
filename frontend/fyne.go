@@ -8,6 +8,7 @@ import (
 
 	"image/color"
 	"log"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -20,6 +21,7 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
+	"github.com/khorcarol/AgentOfThings/internal/personal"
 )
 
 // Custom colors
@@ -101,7 +103,6 @@ func createFriendRequestsUI() fyne.CanvasObject {
 
 			if len(user.Interests) > 0 {
 				image := vertContainer.Objects[2].(*canvas.Image)
-
 				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
 				image.FillMode = canvas.ImageFillContain
 			}
@@ -256,10 +257,11 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 func showUserDetailsDialog(user api.User, parent fyne.Window) {
 	content := container.NewVBox(
 		widget.NewSeparator(),
-		widget.NewLabel("Common Interests:"),
+		widget.NewLabel("Interests:"),
 	)
 
-	for _, interest := range middle.CommonInterests(user.UserID) {
+	for _, interest := range user.Interests {
+		log.Println(interest.Description)
 		content.Add(widget.NewLabel("- " + interests.String(interest.Category) + ": " + interest.Description))
 	}
 
@@ -286,9 +288,43 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 	userDetailsDialog.Show()
 }
 
-// func showPopup(win fyne.Window) {
-// 	dialog.ShowInformation("Notification", "Friend request has been accepted", win)
-// }
+//	func showPopup(win fyne.Window) {
+//		dialog.ShowInformation("Notification", "Friend request has been accepted", win)
+//	}
+func ShowLoginForm(window fyne.Window) {
+	nameEntry := widget.NewEntry()
+	nameEntry.SetPlaceHolder("Enter your name")
+
+	interestsEntry := widget.NewEntry()
+	interestsEntry.SetPlaceHolder("What do you like to do?")
+
+	loginForm := dialog.NewForm(
+		"Login",
+		"Submit",
+		"Cancel",
+		[]*widget.FormItem{
+			widget.NewFormItem("Interests", interestsEntry),
+		},
+		func(ok bool) {
+			if ok {
+				personal.AddInterest(api.Interest{Category: 4, Description: interestsEntry.Text})
+
+				var descriptions []string
+				for _, interest := range personal.GetSelf().User.Interests {
+					descriptions = append(descriptions, interest.Description)
+				}
+
+				dialog.ShowInformation("Welcome", "Hello"+"!\nInterests: "+strings.Join(descriptions, ", "), window)
+			} else {
+				window.Close()
+			}
+		},
+		window,
+	)
+
+	loginForm.Resize(fyne.NewSize(500, 400))
+	loginForm.Show()
+}
 
 func Main() {
 	regularFont := resourceInter24ptBoldTtf
@@ -311,7 +347,7 @@ func Main() {
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	myWindow.SetContent(tabs)
-
+	ShowLoginForm(myWindow)
 	myWindow.ShowAndRun()
 }
 
