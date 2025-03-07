@@ -101,11 +101,11 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			user := IncomingFriendRequests[i]
 			vertContainer := o.(*fyne.Container)
 
-			// if len(user.Interests) > 0 {
-			// 	image := vertContainer.Objects[2].(*canvas.Image)
-			// 	image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
-			// 	image.FillMode = canvas.ImageFillContain
-			// }
+			if len(user.Interests) > 0 {
+				image := vertContainer.Objects[2].(*canvas.Image)
+				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+				image.FillMode = canvas.ImageFillContain
+			}
 
 			button := vertContainer.Objects[3].(*widget.Button)
 			button.OnTapped = func() {
@@ -243,11 +243,11 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 				showUserDetailsDialog(user, myWindow)
 			}
 
-			// if len(user.Interests) > 0 {
-			// 	image := vertContainer.Objects[1].(*canvas.Image)
-			// 	image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
-			// 	image.FillMode = canvas.ImageFillContain
-			// }
+			if len(user.Interests) > 0 {
+				image := vertContainer.Objects[1].(*canvas.Image)
+				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+				image.FillMode = canvas.ImageFillContain
+			}
 
 		},
 	)
