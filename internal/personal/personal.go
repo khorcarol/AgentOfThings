@@ -72,3 +72,7 @@ func GetPicture() image.Image {
 func GetName() string {
 	return "John Doe"
 }
+
+func AddInterest(interest api.Interest) {
+	self.User.Interests = append(self.User.Interests, interest)
+}
