@@ -2,12 +2,12 @@ package middle
 
 import (
 	"log"
+	"sort"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
 	"github.com/khorcarol/AgentOfThings/internal/personal"
 	"github.com/khorcarol/AgentOfThings/internal/storage"
-	priorityQueue "github.com/khorcarol/AgentOfThings/lib/priorityQueue"
 )
 
 var (
@@ -16,7 +16,8 @@ var (
 	ext_friend_requests = make(map[api.ID]api.Friend)
 	friends             = make(map[api.ID]api.Friend)
 	common_interests    = make(map[api.ID]([]api.Interest))
-	ranked_users        = priorityQueue.NewPriorityQueue[api.ID]()
+
+	ranked_users        = [](struct {id api.ID; score int}){}
 )
 
 // Retrieve friends from storage
@@ -45,6 +46,27 @@ func scoreUser(user api.User) int {
 	return score
 }
 
+// Insert into sorted array of users
+func addUser(user api.User) {
+	user_score := scoreUser(user)
+    i := sort.Search(len(ranked_users), func (idx int) bool {return ranked_users[idx].score >= user_score})
+	ranked_users = append(ranked_users, struct{id api.ID; score int}{user.UserID, 0}) // Uses temp of user.UserID as it is easier than making a nil id
+    copy(ranked_users[i+1:], ranked_users[i:])
+    ranked_users[i] = struct{id api.ID; score int}{user.UserID, user_score}
+
+	users[user.UserID] = user
+}
+
+func removeUser(id api.ID) {
+	delete(users, id)
+	
+    i := sort.Search(len(ranked_users), func (idx int) bool {return ranked_users[idx].id == id})
+	if i == len(ranked_users) {
+		return
+	}
+	ranked_users = append(ranked_users[:i], ranked_users[i+1:]...)
+}
+
 // Sets the user to seen
 func setUserSeen(id api.ID, val bool) {
 	u, t := users[id]
@@ -56,8 +78,8 @@ func setUserSeen(id api.ID, val bool) {
 
 func getUserList() []api.User {
 	res := []api.User{}
-	for _, e := range ranked_users.To_list() {
-		res = append(res, users[e])
+	for _, e := range ranked_users {
+		res = append(res, users[e.id])
 	}
 	return res
 }
@@ -114,11 +136,8 @@ func discoverUser() {
 
 	// TODO: Check if stored friend
 	if _, ok := users[user.UserID]; !ok {
-		users[user.UserID] = user
-
+		addUser(user)
 		updateCommonInterests(user.UserID, user.Interests)
-		ranked_users.Push(user.UserID, scoreUser(user))
-
 		frontend_functions.user_refresh(getUserList())
 	}
 }
@@ -143,17 +162,14 @@ func waitOnFriendRequest() {
 			frontend_functions.friend_refresh(getFriendList())
 		} else {
 			// if rejected, set as user and remove from requests
-			users[friend_res.Friend.User.UserID] = ext_friend_requests[friend_res.Friend.User.UserID].User
-			ranked_users.Push(friend_res.Friend.User.UserID, scoreUser(friend_res.Friend.User))
+			addUser(friend_res.Friend.User)
 			frontend_functions.user_refresh(getUserList())
 		}
 		frontend_functions.fr_refresh(getFriendRequests())
 		delete(friend_requests, friend_res.Friend.User.UserID)
 	} else {
 		// this is a new incoming friend request
-		delete(users, friend_res.Friend.User.UserID)
-		ranked_users.Remove(friend_res.Friend.User.UserID)
-
+		removeUser(friend_res.Friend.User.UserID)
 
 		ext_friend_requests[friend_res.Friend.User.UserID] = friend_res.Friend
 
