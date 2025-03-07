@@ -2,6 +2,7 @@ package priorityQueue
 
 import (
 	"container/heap"
+
 	"github.com/khorcarol/AgentOfThings/lib/option"
 )
 
@@ -112,7 +113,7 @@ func (pq *PriorityQueue[T]) Remove(val T) {
 	*pq = n
 }
 
-func (pq PriorityQueue[T]) To_list() []T {
+func (pq *PriorityQueue[T]) To_list() []T {
 	res := make([]T, pq.Len())
 
 	for i := 0; i < pq.Len(); i++ {
