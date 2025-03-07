@@ -7,6 +7,7 @@ import (
 	// "time"
 
 	"image/color"
+	"log"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -52,6 +53,107 @@ func (c *customTheme) Color(name fyne.ThemeColorName, _ fyne.ThemeVariant) color
 	default:
 		return theme.DefaultTheme().Color(name, theme.VariantLight)
 	}
+}
+
+var (
+	incomingFriendsList    *widget.List
+	outgoingFriendsList    *widget.List
+	outgoingFriendRequests []api.User
+	IncomingFriendRequests []api.User
+)
+
+func frRequest(in []api.User, out []api.User) {
+	IncomingFriendRequests = in
+	outgoingFriendRequests = out
+	if incomingFriendsList != nil {
+		incomingFriendsList.Refresh()
+	}
+	if outgoingFriendsList != nil {
+		outgoingFriendsList.Refresh()
+	}
+}
+
+// func onRefreshIncomingFriendRequests(in []api.User) {
+
+// }
+
+// func onRefreshOutgoingFriendRequests(out []api.User) {
+
+// }
+
+func createFriendRequestsUI() fyne.CanvasObject {
+	incomingFriendsList = widget.NewList(
+		func() int { return len(IncomingFriendRequests) },
+		func() fyne.CanvasObject {
+			image := &canvas.Image{}
+			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			return container.NewVBox(
+				widget.NewLabel("User ID"),
+				layout.NewSpacer(),
+				image,
+				widget.NewButton("Accept Friend Request", nil),
+				widget.NewButton("Reject Friend Request", nil),
+			)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			user := IncomingFriendRequests[i]
+			vertContainer := o.(*fyne.Container)
+
+			if len(user.Interests) > 0 {
+				image := vertContainer.Objects[2].(*canvas.Image)
+
+				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+				image.FillMode = canvas.ImageFillContain
+			}
+
+			button := vertContainer.Objects[3].(*widget.Button)
+			button.OnTapped = func() {
+				log.Println("Accepted friend requests")
+				middle.SendFriendRequest(user.UserID, true)
+			}
+
+			button2 := vertContainer.Objects[4].(*widget.Button)
+			button2.OnTapped = func() {
+				log.Println("Rejected friend requests")
+				middle.SendFriendRequest(user.UserID, false)
+			}
+		},
+	)
+
+	outgoingFriendsList = widget.NewList(
+		func() int { return len(outgoingFriendRequests) },
+		func() fyne.CanvasObject {
+			image := &canvas.Image{}
+			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			return container.NewVBox(container.NewHBox(
+				widget.NewLabel("User ID"),
+				layout.NewSpacer(),
+			),
+				image,
+			)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			user := outgoingFriendRequests[i]
+			vertContainer := o.(*fyne.Container)
+
+			if len(user.Interests) > 0 {
+				image := vertContainer.Objects[1].(*canvas.Image)
+
+				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+				image.FillMode = canvas.ImageFillContain
+			}
+		},
+	)
+	return container.NewGridWithColumns(2,
+		container.NewBorder(
+			widget.NewLabel("Incoming Friend Requests"),
+			nil, nil, nil, incomingFriendsList,
+		),
+		container.NewBorder(
+			widget.NewLabel("Outgoing Friend Requests"),
+			nil, nil, nil, outgoingFriendsList,
+		))
+
 }
 
 var (
@@ -140,10 +242,12 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 				showUserDetailsDialog(user, myWindow)
 			}
 
-			image := vertContainer.Objects[1].(*canvas.Image)
+			if len(user.Interests) > 0 {
+				image := vertContainer.Objects[1].(*canvas.Image)
+				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+				image.FillMode = canvas.ImageFillContain
+			}
 
-			image.Resource, _ = fyne.LoadResourceFromURLString("https://go.dev/blog/go-brand/Go-Logo/JPG/Go-Logo_Blue.jpg")
-			image.FillMode = canvas.ImageFillContain
 		},
 	)
 	return container.NewBorder(nil, nil, nil, nil, usersList)
@@ -182,6 +286,10 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 	userDetailsDialog.Show()
 }
 
+// func showPopup(win fyne.Window) {
+// 	dialog.ShowInformation("Notification", "Friend request has been accepted", win)
+// }
+
 func Main() {
 	regularFont := resourceInter24ptBoldTtf
 
@@ -198,6 +306,7 @@ func Main() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Peers", createUsersUI(myWindow)),
 		container.NewTabItem("Friends", createFriendsUI()),
+		container.NewTabItem("Friend Requests", createFriendRequestsUI()),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
@@ -207,5 +316,5 @@ func Main() {
 }
 
 func Init() {
-	middle.Pass(onRefreshFriends, onRefreshUsers)
+	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest)
 }
