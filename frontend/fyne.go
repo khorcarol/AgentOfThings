@@ -4,8 +4,6 @@
 package frontend
 
 import (
-	"image/color"
-	"log"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
@@ -19,6 +17,8 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/connection"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
 	"github.com/khorcarol/AgentOfThings/internal/personal"
+	"image/color"
+	"log"
 )
 
 // Custom colors
@@ -182,10 +182,10 @@ func createFriendsUI() fyne.CanvasObject {
 			img.SetMinSize(fyne.NewSize(48, 48))
 
 			nameLabel := details.Objects[0].(*widget.Label)
-			nameLabel.SetText(friend.Name)
+			nameLabel.SetText("Name: " + friend.Name)
 
 			interestsLabel := details.Objects[1].(*widget.Label)
-			interestsLabel.SetText(formatInterests(middle.CommonInterests(friend.User.UserID)))
+			interestsLabel.SetText("Interests: " + formatInterests(friend.User.Interests))
 		},
 	)
 
