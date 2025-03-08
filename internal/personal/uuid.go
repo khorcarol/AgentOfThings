@@ -11,10 +11,9 @@ import (
 	"github.com/google/uuid"
 )
 
-const (
-	appCacheDirName = "AgentOfThings"
-	uuidFileName    = "uuid.json"
-)
+const appCacheDirName = "AgentOfThings"
+
+var UUIDFileName = "uuid.json"
 
 type uuidConfig struct {
 	UUID string `json:"uuid"`
@@ -46,7 +45,7 @@ func getUUIDInternal() (uuid.UUID, error) {
 	}
 
 	appConfigPath := filepath.Join(cacheDir, appCacheDirName)
-	uuidFilePath := filepath.Join(appConfigPath, uuidFileName)
+	uuidFilePath := filepath.Join(appConfigPath, UUIDFileName)
 
 	if info, err := os.Stat(uuidFilePath); err == nil && !info.IsDir() {
 		// File exists; read and unmarshal the stored UUID.
