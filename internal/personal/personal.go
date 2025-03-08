@@ -80,6 +80,10 @@ func getName() string {
 }
 
 func AddInterest(interest api.Interest) {
+	if err := sources.AddManualInterest(interest); err != nil {
+		log.Printf("Failed to add interest: %v\n", err)
+		return
+	}
 	self.User.Interests = append(self.User.Interests, interest)
 }
 
