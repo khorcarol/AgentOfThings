@@ -144,14 +144,10 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			interests_label := vertContainer.Objects[1].(*widget.Label)
 			interests_label.SetText("Interests: " + formatInterests(user.Interests))
 
-		out:
-			for i := range user.Interests {
-				if user.Interests[i].Image != nil {
-					image := vertContainer.Objects[2].(*canvas.Image)
-					image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[i].Image)
-					image.FillMode = canvas.ImageFillContain
-					break out
-				}
+			if imageUrl := getImage(user.Interests); imageUrl != nil {
+				image := vertContainer.Objects[2].(*canvas.Image)
+				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
+				image.FillMode = canvas.ImageFillContain
 			}
 
 		},
