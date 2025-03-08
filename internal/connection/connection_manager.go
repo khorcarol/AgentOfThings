@@ -172,8 +172,14 @@ func (cmgr *ConnectionManager) StartDiscovery() {
 	go func() {
 		var wg sync.WaitGroup
 		for peerAddr := range cmgr.peerAddrChan {
-			wg.Add(1)
-			go cmgr.connectToPeer(peerAddr, &wg)
+			if shouldHandshake(peerAddr.ID, cmgr.host.ID()) {
+				wg.Add(1)
+				go cmgr.connectToPeer(peerAddr, &wg)
+			}
 		}
 	}()
+}
+
+func shouldHandshake(peerID peer.ID, ourID peer.ID) bool {
+	return peerID < ourID
 }
