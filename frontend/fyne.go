@@ -328,16 +328,16 @@ func ShowLoginForm(window fyne.Window) {
 			if ok {
 				personal.AddInterest(api.Interest{Category: 4, Description: interestsEntry.Text})
 				personal.SetName(nameEntry.Text)
+				connection_manager, err := connection.GetCMGR()
+				if err != nil {
+					log.Fatal("Failed to initialise ConnectionManager:", err)
+				}
+				middle.Start()
+				connection_manager.StartDiscovery()
 
 			} else {
 				window.Close()
 			}
-			connection_manager, err := connection.GetCMGR()
-			if err != nil {
-				log.Fatal("Failed to initialise ConnectionManager:", err)
-			}
-			middle.Start()
-			connection_manager.StartDiscovery()
 		},
 		window,
 	)
