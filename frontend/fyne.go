@@ -102,7 +102,7 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			user := IncomingFriendRequests[i]
 			vertContainer := o.(*fyne.Container)
 
-			if len(user.Interests) > 0 {
+			if len(user.Interests) > 0 && user.Interests[0].Image != nil {
 				image := vertContainer.Objects[2].(*canvas.Image)
 				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
 				image.FillMode = canvas.ImageFillContain
@@ -138,7 +138,7 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			user := outgoingFriendRequests[i]
 			vertContainer := o.(*fyne.Container)
 
-			if len(user.Interests) > 0 {
+			if len(user.Interests) > 0 && user.Interests[0].Image != nil {
 				image := vertContainer.Objects[1].(*canvas.Image)
 
 				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
@@ -243,7 +243,7 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 				showUserDetailsDialog(user, myWindow)
 			}
 
-			if len(user.Interests) > 0 {
+			if len(user.Interests) > 0 && user.Interests[0].Image != nil {
 				image := vertContainer.Objects[1].(*canvas.Image)
 				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
 				image.FillMode = canvas.ImageFillContain
