@@ -16,6 +16,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/peer"
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
+	"github.com/vishalkuo/bimap"
 )
 
 type peerLevel int
@@ -26,18 +27,25 @@ type ConnectionManager struct {
 	host           host.Host
 	peersMutex     sync.Mutex
 	connectedPeers map[peer.ID]struct{}
-	uuids          map[uuid.UUID]peer.ID
+	uuids          bimap.BiMap[uuid.UUID, peer.ID]
 
 	// B->M, sends a new discovered user
 	IncomingUsers chan api.User
 	// B->M, sends an external friend request to respond to
 	IncomingFriendRequest chan api.FriendRequest
+	// B->M, informs middle that a peer has disconnected
+	PeerDisconnections chan uuid.UUID
 }
 
 func (cmgr *ConnectionManager) peerDisconnectWrapper() func(network.Network, network.Conn) {
 	return func(n network.Network, c network.Conn) {
 		cmgr.peersMutex.Lock()
 		defer cmgr.peersMutex.Unlock()
+		log.Printf("Peer %+v disconnected\n", c.RemotePeer())
+		uuid, ok := cmgr.uuids.GetInverse(c.RemotePeer())
+		if ok {
+			cmgr.PeerDisconnections <- uuid
+		}
 		delete(cmgr.connectedPeers, c.RemotePeer())
 	}
 }
@@ -58,9 +66,10 @@ func initConnectionManager() (*ConnectionManager, error) {
 	}
 	cmgr.host = _self
 	cmgr.connectedPeers = make(map[peer.ID]struct{})
-	cmgr.uuids = make(map[uuid.UUID]peer.ID)
+	cmgr.uuids = *bimap.NewBiMap[uuid.UUID, peer.ID]()
 	cmgr.IncomingUsers = make(chan api.User, 10)
 	cmgr.IncomingFriendRequest = make(chan api.FriendRequest, 10)
+	cmgr.PeerDisconnections = make(chan uuid.UUID, 10)
 
 	// register disconnect protocol
 	cmgr.host.Network().Notify(&network.NotifyBundle{
@@ -95,7 +104,7 @@ func (cmgr *ConnectionManager) addIncomingUser(msg *api.User, id peer.ID) {
 	}
 	cmgr.peersMutex.Lock()
 	defer cmgr.peersMutex.Unlock()
-	cmgr.uuids[msg.UserID.Address] = id
+	cmgr.uuids.Insert(msg.UserID.Address, id)
 	cmgr.connectedPeers[id] = struct{}{}
 	cmgr.IncomingUsers <- *msg
 }
@@ -103,7 +112,7 @@ func (cmgr *ConnectionManager) addIncomingUser(msg *api.User, id peer.ID) {
 // SendFriendRequest sends a friend request by calling the friend protocol layer.
 // Application logic (i.e. middle) should handle if this friend is to be displayed or stored.
 func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.FriendRequest) error {
-	peerID, ok := cmgr.uuids[data.Friend.User.UserID.Address]
+	peerID, ok := cmgr.uuids.Get(data.Friend.User.UserID.Address)
 	if !ok {
 		return nil
 	}
@@ -135,7 +144,7 @@ func (cmgr *ConnectionManager) peerToUserHandshake(peerAddr peer.AddrInfo, wg *s
 	// Add user to set of currently connected users and send to middle
 	cmgr.peersMutex.Lock()
 	defer cmgr.peersMutex.Unlock()
-	cmgr.uuids[msg.UserID.Address] = peerAddr.ID
+	cmgr.uuids.Insert(msg.UserID.Address, peerAddr.ID)
 	cmgr.connectedPeers[peerAddr.ID] = struct{}{}
 	cmgr.IncomingUsers <- *msg
 	return nil

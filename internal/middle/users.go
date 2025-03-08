@@ -135,6 +135,45 @@ func updateCommonInterests(userID api.ID, interests []api.Interest) {
 	common_interests[userID] = common
 }
 
+// Listens for disconnected peers
+func waitOnDisconnection() {
+	cmgr, err := connection.GetCMGR()
+	if err != nil {
+		log.Fatal(err)
+	}
+	uuid := <-cmgr.PeerDisconnections
+	id := api.ID{Address: uuid}
+	log.Printf("User %+v disconnected\n", uuid)
+
+	// check is the uuid is a user
+	_, ok := users[id]
+	if ok {
+		removeUser(id)
+		frontend_functions.user_refresh(getUserList())
+		return
+	}
+	// check if the uuid is a friend
+	_, ok = friends[id]
+	if ok {
+		delete(friends, id)
+		frontend_functions.friend_refresh(getFriendList())
+		return
+	}
+	// check if the uuid is an outgoing friend request
+	_, ok = friend_requests[id]
+	if ok {
+		delete(friend_requests, id)
+		frontend_functions.fr_refresh(getFriendRequests())
+		return
+	}
+	// check if the uuid is an incoming friend request
+	_, ok = ext_friend_requests[id]
+	if ok {
+		delete(ext_friend_requests, id)
+		frontend_functions.fr_refresh(getFriendRequests())
+	}
+}
+
 // Adds a new user to users
 func discoverUser() {
 	cmgr, err := connection.GetCMGR()
@@ -174,8 +213,8 @@ func waitOnFriendRequest() {
 			addUser(friend_res.Friend.User)
 			frontend_functions.user_refresh(getUserList())
 		}
-		frontend_functions.fr_refresh(getFriendRequests())
 		delete(friend_requests, friend_res.Friend.User.UserID)
+		frontend_functions.fr_refresh(getFriendRequests())
 	} else {
 		// this is a new incoming friend request
 		removeUser(friend_res.Friend.User.UserID)

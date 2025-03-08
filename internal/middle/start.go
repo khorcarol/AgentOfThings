@@ -15,5 +15,11 @@ func Start() {
 		}
 	}()
 
+	go func() {
+		for {
+			waitOnDisconnection() // blocks on [PeerDisconnections] channel from cmgr.
+		}
+	}()
+
 	log.Println("Middle layer processing started")
 }
