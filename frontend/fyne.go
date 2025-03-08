@@ -217,7 +217,6 @@ func onRefreshFriends(friends []api.Friend) {
 }
 
 func onRefreshUsers(users []api.User) {
-	log.Print(users)
 	currentUsers = users
 	if usersList != nil {
 		usersList.Refresh()
