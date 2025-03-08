@@ -174,8 +174,8 @@ func waitOnFriendRequest() {
 			addUser(friend_res.Friend.User)
 			frontend_functions.user_refresh(getUserList())
 		}
-		frontend_functions.fr_refresh(getFriendRequests())
 		delete(friend_requests, friend_res.Friend.User.UserID)
+		frontend_functions.fr_refresh(getFriendRequests())
 	} else {
 		// this is a new incoming friend request
 		removeUser(friend_res.Friend.User.UserID)
