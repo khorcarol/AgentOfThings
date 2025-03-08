@@ -70,13 +70,13 @@ func GetPicture() image.Image {
 
 // TODO: Load name.
 func GetName() string {
-	return "John Doe"
+	return self.Name
 }
 
 func AddInterest(interest api.Interest) {
 	self.User.Interests = append(self.User.Interests, interest)
 }
 
-func AddName(name string) {
+func SetName(name string) {
 	self.Name = name
 }

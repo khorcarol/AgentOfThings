@@ -308,7 +308,7 @@ func ShowLoginForm(window fyne.Window) {
 		func(ok bool) {
 			if ok {
 				personal.AddInterest(api.Interest{Category: 4, Description: interestsEntry.Text})
-				personal.AddName(nameEntry.Text)
+				personal.SetName(nameEntry.Text)
 				// var descriptions []string
 				// for _, interest := range personal.GetSelf().User.Interests {
 				// 	descriptions = append(descriptions, interest.Description)
