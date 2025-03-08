@@ -112,7 +112,7 @@ func (cmgr *ConnectionManager) addIncomingUser(msg *api.User, id peer.ID) {
 // SendFriendRequest sends a friend request by calling the friend protocol layer.
 // Application logic (i.e. middle) should handle if this friend is to be displayed or stored.
 func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.FriendRequest) error {
-	peerID, ok := cmgr.uuids.Get(data.Friend.User.UserID.Address)
+	peerID, ok := cmgr.uuids.Get(user.UserID.Address)
 	if !ok {
 		return nil
 	}
