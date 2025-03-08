@@ -13,7 +13,6 @@ func main() {
 	for i, arg := range os.Args {
 		if arg == "--profile" {
 			if len(os.Args) > i+1 {
-				log.Println("hello")
 				storage.SetProfileSubdirectory(os.Args[i+1])
 			} else {
 				log.Fatalf("%s must have a value", arg)
