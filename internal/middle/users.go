@@ -17,7 +17,10 @@ var (
 	friends             = make(map[api.ID]api.Friend)
 	common_interests    = make(map[api.ID]([]api.Interest))
 
-	ranked_users        = [](struct {id api.ID; score int}){}
+	ranked_users = [](struct {
+		id    api.ID
+		score int
+	}){}
 )
 
 // Retrieve friends from storage
@@ -49,18 +52,24 @@ func scoreUser(user api.User) int {
 // Insert into sorted array of users
 func addUser(user api.User) {
 	user_score := scoreUser(user)
-    i := sort.Search(len(ranked_users), func (idx int) bool {return ranked_users[idx].score >= user_score})
-	ranked_users = append(ranked_users, struct{id api.ID; score int}{user.UserID, 0}) // Uses temp of user.UserID as it is easier than making a nil id
-    copy(ranked_users[i+1:], ranked_users[i:])
-    ranked_users[i] = struct{id api.ID; score int}{user.UserID, user_score}
+	i := sort.Search(len(ranked_users), func(idx int) bool { return ranked_users[idx].score >= user_score })
+	ranked_users = append(ranked_users, struct {
+		id    api.ID
+		score int
+	}{user.UserID, 0}) // Uses temp of user.UserID as it is easier than making a nil id
+	copy(ranked_users[i+1:], ranked_users[i:])
+	ranked_users[i] = struct {
+		id    api.ID
+		score int
+	}{user.UserID, user_score}
 
 	users[user.UserID] = user
 }
 
 func removeUser(id api.ID) {
 	delete(users, id)
-	
-    i := sort.Search(len(ranked_users), func (idx int) bool {return ranked_users[idx].id == id})
+
+	i := sort.Search(len(ranked_users), func(idx int) bool { return ranked_users[idx].id == id })
 	if i == len(ranked_users) {
 		return
 	}

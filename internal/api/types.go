@@ -36,8 +36,8 @@ type FriendRequest struct {
 	Friend   Friend
 	IsOld    bool
 	Accepted bool
-}  
-  
+}
+
 func (id ID) String() string {
 	return id.Address.String()
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/api"
 )
 
-type FriendJson struct { 
+type FriendJson struct {
 	User  api.User
 	Photo string
 	Name  string
@@ -32,8 +32,7 @@ func friendToFriendJson(friend api.Friend) FriendJson {
 
 	out.Close()
 
-
-	return FriendJson{User: friend.User, Photo: fpath, Name:friend.Name}
+	return FriendJson{User: friend.User, Photo: fpath, Name: friend.Name}
 }
 
 func friendJsonToFriend(fj FriendJson) api.Friend {
@@ -41,7 +40,7 @@ func friendJsonToFriend(fj FriendJson) api.Friend {
 	if err != nil {
 		log.Fatalf("Could not find storage directory: %s", err)
 	}
-	
+
 	img, err2 := openImage(filepath.Join(sdir, fj.Photo))
 	if err2 != nil {
 		log.Fatalf("Could not open image file: %s", err2)
