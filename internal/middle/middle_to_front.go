@@ -69,8 +69,7 @@ func SendFriendRequest(userID api.ID, accept bool) {
 
 	if _, ok := users[userID]; ok {
 		// sending out a new request
-		delete(users, userID)
-		ranked_users.Remove(userID)
+		removeUser(userID)
 		friend_requests[userID] = user
 
 		frontend_functions.fr_refresh(getFriendRequests())
@@ -83,8 +82,7 @@ func SendFriendRequest(userID api.ID, accept bool) {
 			frontend_functions.friend_refresh(getFriendList())
 		} else {
 			// discard! return them to users
-			users[userID] = ext_friend_requests[userID].User
-			ranked_users.Push(user.UserID, scoreUser(user))
+			addUser(ext_friend_requests[userID].User)
 			frontend_functions.user_refresh(getUserList())
 		}
 		delete(ext_friend_requests, userID)
