@@ -30,7 +30,7 @@ func (p defaultDirProvider) GetConfigDir() (string, error) {
 }
 
 func (p defaultDirProvider) GetCacheDir() (string, error) {
-	return os.UserConfigDir()
+	return os.UserCacheDir()
 }
 
 // concrete implementation of dirProvider
