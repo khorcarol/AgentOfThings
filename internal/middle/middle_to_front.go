@@ -52,10 +52,7 @@ func SendFriendRequest(userID api.ID, accept bool) {
 		}
 	}
 
-	cmgr, err := connection.GetCMGR()
-	if err != nil {
-		log.Fatal(err)
-	}
+	cmgr := connection.GetCMGR()
 	// [self] is a package variable, see users.go.
 	fr := api.FriendRequest{
 		Friend:   personal.GetSelf(),
