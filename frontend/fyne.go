@@ -20,6 +20,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
+	"github.com/khorcarol/AgentOfThings/internal/connection"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
 	"github.com/khorcarol/AgentOfThings/internal/personal"
 )
@@ -154,7 +155,6 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			widget.NewLabel("Outgoing Friend Requests"),
 			nil, nil, nil, outgoingFriendsList,
 		))
-
 }
 
 var (
@@ -248,7 +248,6 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
 				image.FillMode = canvas.ImageFillContain
 			}
-
 		},
 	)
 	return container.NewBorder(nil, nil, nil, nil, usersList)
@@ -318,6 +317,12 @@ func ShowLoginForm(window fyne.Window) {
 			} else {
 				window.Close()
 			}
+			connection_manager, err := connection.GetCMGR()
+			if err != nil {
+				log.Fatal("Failed to initialise ConnectionManager:", err)
+			}
+			middle.Start()
+			connection_manager.StartDiscovery()
 		},
 		window,
 	)
