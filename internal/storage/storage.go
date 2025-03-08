@@ -11,8 +11,9 @@ import (
 )
 
 const (
-	appDirName      = "AgentOfThings"
-	friendsFileName = "friends.json"
+	appDirName       = "AgentOfThings"
+	friendsFileName  = "friends.json"
+	userNameFileName = "name.txt"
 )
 
 // dirProvider interface for getting system directories
@@ -164,4 +165,33 @@ func LoadFriends() (map[api.ID]api.Friend, error) {
 	}
 
 	return friends, nil
+}
+
+func LoadUserName() (string, error) {
+	storageDir, err := GetStorageDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get storage directory: %w", err)
+	}
+
+	filePath := filepath.Join(storageDir, userNameFileName)
+	var name []byte
+	if name, err = os.ReadFile(filePath); err != nil {
+		return "", fmt.Errorf("failed to read user name from file: %w", err)
+	}
+
+	return (string)(name), nil
+}
+
+func SaveUserName(name string) error {
+	storageDir, err := GetStorageDir()
+	if err != nil {
+		return fmt.Errorf("failed to get storage directory: %w", err)
+	}
+
+	filePath := filepath.Join(storageDir, userNameFileName)
+	if err := os.WriteFile(filePath, ([]byte)(name), 0644); err != nil {
+		return fmt.Errorf("failed to write user name to file: %w", err)
+	}
+
+	return nil
 }
