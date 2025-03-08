@@ -20,7 +20,7 @@ func Init() {
 	interests := sources.GetInterests()
 	us := api.User{UserID: id, Interests: interests, Seen: false}
 
-	self = api.Friend{User: us, Photo: api.ImageData{Img: GetPicture()}, Name: GetName()}
+	self = api.Friend{User: us, Photo: api.ImageData{Img: GetPicture()}, Name: getName()}
 }
 
 // Returns self, the Friend struct containing our personal data
@@ -69,15 +69,25 @@ func GetPicture() image.Image {
 	return nil
 }
 
-// TODO: Load name.
-func GetName() string {
-	return self.Name
+func getName() string {
+	name, err := storage.LoadUserName()
+
+	if err != nil {
+		name = "John Doe"
+	}
+
+	return name
 }
 
 func AddInterest(interest api.Interest) {
+	if err := sources.AddManualInterest(interest); err != nil {
+		log.Printf("Failed to add interest: %v\n", err)
+		return
+	}
 	self.User.Interests = append(self.User.Interests, interest)
 }
 
 func SetName(name string) {
+	storage.SaveUserName(name)
 	self.Name = name
 }

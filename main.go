@@ -5,6 +5,9 @@ import (
 	"os"
 
 	"github.com/khorcarol/AgentOfThings/frontend"
+	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/internal/connection"
+	"github.com/khorcarol/AgentOfThings/internal/middle"
 	"github.com/khorcarol/AgentOfThings/internal/personal"
 	"github.com/khorcarol/AgentOfThings/internal/storage"
 )
@@ -22,5 +25,19 @@ func main() {
 
 	personal.Init()
 	frontend.Init()
-	frontend.Main()
+
+	middle.Start()
+
+	connection_manager := connection.GetCMGR()
+	if personal.IsNewUser() {
+		frontend.InitLoginForm(func(name, interest string) {
+			personal.AddInterest(api.Interest{Category: 4, Description: interest})
+			personal.SetName(name)
+			connection_manager.StartDiscovery()
+		})
+	} else {
+		connection_manager.StartDiscovery()
+	}
+
+	frontend.Run()
 }

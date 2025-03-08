@@ -19,9 +19,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
-	"github.com/khorcarol/AgentOfThings/internal/connection"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
-	"github.com/khorcarol/AgentOfThings/internal/personal"
 )
 
 // Custom colors
@@ -305,7 +303,10 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 //	func showPopup(win fyne.Window) {
 //		dialog.ShowInformation("Notification", "Friend request has been accepted", win)
 //	}
-func ShowLoginForm(window fyne.Window) {
+
+var myWindow fyne.Window
+
+func InitLoginForm(callback func(name, interest string)) {
 	nameEntry := widget.NewEntry()
 	nameEntry.SetPlaceHolder("Enter your name")
 
@@ -322,31 +323,25 @@ func ShowLoginForm(window fyne.Window) {
 		},
 		func(ok bool) {
 			if ok {
-				personal.AddInterest(api.Interest{Category: 4, Description: interestsEntry.Text})
-				personal.SetName(nameEntry.Text)
-				connection_manager, err := connection.GetCMGR()
-				if err != nil {
-					log.Fatal("Failed to initialise ConnectionManager:", err)
-				}
-				middle.Start()
-				connection_manager.StartDiscovery()
-
+				callback(nameEntry.Text, interestsEntry.Text)
 			} else {
-				window.Close()
+				myWindow.Close()
 			}
 		},
-		window,
+		myWindow,
 	)
 
 	loginForm.Resize(fyne.NewSize(500, 400))
 	loginForm.Show()
 }
 
-func Main() {
+func Init() {
+	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest)
+
 	regularFont := resourceInter24ptBoldTtf
 
 	myApp := app.New()
-	myWindow := myApp.NewWindow("Agent of Friends")
+	myWindow = myApp.NewWindow("Agent of Friends")
 	myWindow.Resize(fyne.NewSize(800, 600))
 	myApp.Settings().SetTheme(&customTheme{
 		Theme:           theme.DefaultTheme(),
@@ -363,10 +358,8 @@ func Main() {
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	myWindow.SetContent(tabs)
-	ShowLoginForm(myWindow)
-	myWindow.ShowAndRun()
 }
 
-func Init() {
-	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest)
+func Run() {
+	myWindow.ShowAndRun()
 }

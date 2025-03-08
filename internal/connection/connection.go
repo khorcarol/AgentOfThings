@@ -1,23 +1,26 @@
 package connection
 
-import "sync"
+import (
+	"log"
+	"sync"
+)
 
 var (
 	cmgr *ConnectionManager
 	lock sync.Mutex
 )
 
-func GetCMGR() (*ConnectionManager, error) {
+func GetCMGR() *ConnectionManager {
 	if cmgr == nil {
 		lock.Lock()
 		defer lock.Unlock()
 		if cmgr == nil {
 			_cmgr, err := initConnectionManager()
 			if err != nil {
-				return nil, err
+				log.Fatal("Failed to create a connction manager.", err)
 			}
 			cmgr = _cmgr
 		}
 	}
-	return cmgr, nil
+	return cmgr
 }

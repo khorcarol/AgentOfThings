@@ -144,10 +144,7 @@ func updateCommonInterests(userID api.ID, interests []api.Interest) {
 
 // Listens for disconnected peers
 func waitOnDisconnection() {
-	cmgr, err := connection.GetCMGR()
-	if err != nil {
-		log.Fatal(err)
-	}
+	cmgr := connection.GetCMGR()
 	uuid := <-cmgr.PeerDisconnections
 	id := api.ID{Address: uuid}
 	log.Printf("User %+v disconnected\n", uuid)
@@ -183,10 +180,7 @@ func waitOnDisconnection() {
 
 // Adds a new user to users
 func discoverUser() {
-	cmgr, err := connection.GetCMGR()
-	if err != nil {
-		log.Fatal(err)
-	}
+	cmgr := connection.GetCMGR()
 	user := <-cmgr.IncomingUsers
 
 	// TODO: Check if stored friend
@@ -199,10 +193,7 @@ func discoverUser() {
 
 // Recieve response from (our) sent friend request
 func waitOnFriendRequest() {
-	cmgr, err := connection.GetCMGR()
-	if err != nil {
-		log.Fatal(err)
-	}
+	cmgr := connection.GetCMGR()
 	friend_res := <-cmgr.IncomingFriendRequest
 
 	// check whether we are receiving a response or request
