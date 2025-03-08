@@ -342,7 +342,7 @@ func ShowLoginForm(window fyne.Window) {
 	loginForm.Show()
 }
 
-func Main() {
+func Main(showLoginForm bool) {
 	regularFont := resourceInter24ptBoldTtf
 
 	myApp := app.New()
@@ -363,7 +363,9 @@ func Main() {
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	myWindow.SetContent(tabs)
-	ShowLoginForm(myWindow)
+	if showLoginForm {
+		ShowLoginForm(myWindow)
+	}
 	myWindow.ShowAndRun()
 }
 

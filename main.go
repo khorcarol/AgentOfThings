@@ -22,5 +22,5 @@ func main() {
 
 	personal.Init()
 	frontend.Init()
-	frontend.Main()
+	frontend.Main(personal.IsNewUser())
 }

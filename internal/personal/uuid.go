@@ -24,6 +24,7 @@ var (
 	cachedUUID uuid.UUID
 	initOnce   sync.Once
 	initErr    error
+	isNewUser  = false
 )
 
 // GetUUID returns the application UUID by reading it from the OS-specific
@@ -35,6 +36,10 @@ func GetUUID() (uuid.UUID, error) {
 		cachedUUID, initErr = getUUIDInternal()
 	})
 	return cachedUUID, initErr
+}
+
+func IsNewUser() bool {
+	return isNewUser
 }
 
 // getUUIDInternal reads the UUID from the appdata cache file, or creates a cache file if not found.
@@ -70,6 +75,8 @@ func getUUIDInternal() (uuid.UUID, error) {
 		// Shouldn't happen if the OS plays ball.
 		return uuid.Nil, fmt.Errorf("failed to check for UUID file: %w", err)
 	}
+
+	isNewUser = true
 
 	newUUID := uuid.New()
 	config := uuidConfig{UUID: newUUID.String()}
