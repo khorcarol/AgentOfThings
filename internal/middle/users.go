@@ -2,6 +2,7 @@ package middle
 
 import (
 	"log"
+	"slices"
 	"sort"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
@@ -73,7 +74,7 @@ func removeUser(id api.ID) {
 	if i == len(ranked_users) {
 		return
 	}
-	ranked_users = append(ranked_users[:i], ranked_users[i+1:]...)
+	ranked_users = slices.Delete(ranked_users, i, i+1)
 }
 
 // Sets the user to seen

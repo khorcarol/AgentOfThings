@@ -162,9 +162,8 @@ func (cmgr *ConnectionManager) connectToPeer(peerAddr peer.AddrInfo, wg *sync.Wa
 func (cmgr *ConnectionManager) StartDiscovery() {
 	go func() {
 		var wg sync.WaitGroup
-		for peerAddr := range cmgr.peerAddrChan {
-			wg.Add(1)
-			go cmgr.connectToPeer(peerAddr, &wg)
+		for {
+			cmgr.waitOnPeer(&wg)
 		}
 	}()
 }

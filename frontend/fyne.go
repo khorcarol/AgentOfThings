@@ -6,6 +6,7 @@ package frontend
 import (
 	"image/color"
 	"log"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
@@ -256,7 +257,6 @@ func showUserDetailsDialog(user api.User, parent fyne.Window) {
 	)
 
 	for _, interest := range user.Interests {
-		log.Println(interest.Description)
 		content.Add(widget.NewLabel("- " + interests.String(interest.Category) + ": " + interest.Description))
 	}
 
