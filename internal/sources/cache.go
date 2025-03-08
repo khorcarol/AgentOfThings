@@ -9,15 +9,16 @@ import (
 	"time"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/internal/storage"
 )
 
 func getSourceCacheFileName(sourceName string) (string, error) {
-	cachePath, err := os.UserCacheDir()
+	cachePath, err := storage.GetCacheDir()
 	if err != nil {
 		return "", err
 	}
 
-	path := filepath.Join(cachePath, "AgentOfThings", "sources", sourceName+".json")
+	path := filepath.Join(cachePath, "sources", sourceName+".json")
 
 	return path, nil
 }

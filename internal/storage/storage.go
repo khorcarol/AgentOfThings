@@ -11,13 +11,14 @@ import (
 )
 
 const (
-	appDirName      = "agentofthings"
+	appDirName      = "AgentOfThings"
 	friendsFileName = "friends.json"
 )
 
 // dirProvider interface for getting system directories
 type dirProvider interface {
 	GetConfigDir() (string, error)
+	GetCacheDir() (string, error)
 }
 
 // defaultDirProvider implements dirProvider
@@ -27,8 +28,18 @@ func (p defaultDirProvider) GetConfigDir() (string, error) {
 	return os.UserConfigDir()
 }
 
+func (p defaultDirProvider) GetCacheDir() (string, error) {
+	return os.UserConfigDir()
+}
+
 // concrete implementation of dirProvider
 var provider dirProvider = defaultDirProvider{}
+
+var profileSubdirectory *string
+
+func SetProfileSubdirectory(subdir string) {
+	profileSubdirectory = &subdir
+}
 
 // returns directory where data should be stored
 func GetStorageDir() (string, error) {
@@ -38,8 +49,30 @@ func GetStorageDir() (string, error) {
 	}
 
 	storageDir := filepath.Join(configDir, appDirName)
+	if profileSubdirectory != nil {
+		storageDir = filepath.Join(storageDir, *profileSubdirectory)
+	}
+
 	if err := os.MkdirAll(storageDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create storage directory: %w", err)
+	}
+
+	return storageDir, nil
+}
+
+func GetCacheDir() (string, error) {
+	configDir, err := provider.GetCacheDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get cache directory: %w", err)
+	}
+
+	storageDir := filepath.Join(configDir, appDirName)
+	if profileSubdirectory != nil {
+		storageDir = filepath.Join(storageDir, *profileSubdirectory)
+	}
+
+	if err := os.MkdirAll(storageDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
 	return storageDir, nil
