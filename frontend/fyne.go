@@ -198,7 +198,7 @@ func createFriendsUI() fyne.CanvasObject {
 			interestsLabel.SetText("Interests: " + formatInterests(friend.User.Interests))
 
 			if imageUrl := getImage(friend.User.Interests); imageUrl != nil {
-				image := container.Objects[3].(*canvas.Image)
+				image := container.Objects[2].(*canvas.Image)
 				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
 				image.FillMode = canvas.ImageFillContain
 			}
