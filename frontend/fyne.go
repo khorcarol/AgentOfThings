@@ -4,6 +4,9 @@
 package frontend
 
 import (
+	"image/color"
+	"log"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
@@ -17,8 +20,6 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/connection"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
 	"github.com/khorcarol/AgentOfThings/internal/personal"
-	"image/color"
-	"log"
 )
 
 // Custom colors
@@ -140,6 +141,7 @@ func createFriendRequestsUI() fyne.CanvasObject {
 				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
 				image.FillMode = canvas.ImageFillContain
 			}
+
 		},
 	)
 	return container.NewGridWithColumns(2,
@@ -220,30 +222,38 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 		func() fyne.CanvasObject {
 			image := &canvas.Image{}
 			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
-			return container.NewVBox(container.NewHBox(
+			return container.NewVBox(
 				widget.NewLabel("User ID"),
 				layout.NewSpacer(),
-				widget.NewButton("Learn More", nil),
-			),
+				widget.NewLabel("Interests: "),
 				image,
+				widget.NewButton("Send Friend Request", nil),
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			user := currentUsers[i]
-			vertContainer := o.(*fyne.Container)
-			container := vertContainer.Objects[0].(*fyne.Container)
+			container := o.(*fyne.Container)
 
-			button := container.Objects[2].(*widget.Button)
+			interests_label := container.Objects[2].(*widget.Label)
+			interests_label.Text = "Interests: " + formatInterests(user.Interests)
+			interests_label.Refresh()
+
+			for i := 0; i < len(user.Interests); i++ {
+				if user.Interests[i].Image != nil {
+					image := container.Objects[3].(*canvas.Image)
+					image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[i].Image)
+					image.FillMode = canvas.ImageFillContain
+				}
+			}
+
+			button := container.Objects[4].(*widget.Button)
+
 			button.OnTapped = func() {
 				middle.Seen(user.UserID)
-				showUserDetailsDialog(user, myWindow)
+				middle.SendFriendRequest(user.UserID, true)
+				dialog.ShowInformation("Request Sent", "Friend request sent!", myWindow)
 			}
 
-			if len(user.Interests) > 0 && user.Interests[0].Image != nil {
-				image := vertContainer.Objects[1].(*canvas.Image)
-				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
-				image.FillMode = canvas.ImageFillContain
-			}
 		},
 	)
 	return container.NewBorder(nil, nil, nil, nil, usersList)
