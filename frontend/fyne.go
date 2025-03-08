@@ -4,8 +4,11 @@
 package frontend
 
 import (
+	// "go/format"
+
 	"image/color"
 	"log"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
@@ -58,49 +61,54 @@ var (
 	incomingFriendsList    *widget.List
 	outgoingFriendsList    *widget.List
 	outgoingFriendRequests []api.User
-	IncomingFriendRequests []api.User
+	incomingFriendRequests []api.User
 )
 
 func frRequest(in []api.User, out []api.User) {
-	IncomingFriendRequests = in
+	incomingFriendRequests = in
 	outgoingFriendRequests = out
 	if incomingFriendsList != nil {
 		incomingFriendsList.Refresh()
 	}
+	outgoingFriendRequests = out
 	if outgoingFriendsList != nil {
 		outgoingFriendsList.Refresh()
 	}
 }
 
-// func onRefreshIncomingFriendRequests(in []api.User) {
-
-// }
-
-// func onRefreshOutgoingFriendRequests(out []api.User) {
-
-// }
+func getImage(interests []api.Interest) *string {
+	for i := 0; i < len(interests); i++ {
+		if interests[i].Image != nil {
+			return interests[i].Image
+		}
+	}
+	return nil
+}
 
 func createFriendRequestsUI() fyne.CanvasObject {
 	incomingFriendsList = widget.NewList(
-		func() int { return len(IncomingFriendRequests) },
+		func() int { return len(incomingFriendRequests) },
 		func() fyne.CanvasObject {
 			image := &canvas.Image{}
 			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
 			return container.NewVBox(
-				widget.NewLabel("User ID"),
-				layout.NewSpacer(),
+				widget.NewLabel("Anonymous User"),
+				widget.NewLabel("Interests: "),
 				image,
 				widget.NewButton("Accept Friend Request", nil),
 				widget.NewButton("Reject Friend Request", nil),
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			user := IncomingFriendRequests[i]
+			user := incomingFriendRequests[i]
 			vertContainer := o.(*fyne.Container)
 
-			if len(user.Interests) > 0 && user.Interests[0].Image != nil {
+			interests_label := vertContainer.Objects[1].(*widget.Label)
+			interests_label.SetText("Interests: " + formatInterests(user.Interests))
+
+			if imageUrl := getImage(user.Interests); imageUrl != nil {
 				image := vertContainer.Objects[2].(*canvas.Image)
-				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
 				image.FillMode = canvas.ImageFillContain
 			}
 
@@ -123,10 +131,9 @@ func createFriendRequestsUI() fyne.CanvasObject {
 		func() fyne.CanvasObject {
 			image := &canvas.Image{}
 			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
-			return container.NewVBox(container.NewHBox(
-				widget.NewLabel("User ID"),
-				layout.NewSpacer(),
-			),
+			return container.NewVBox(
+				widget.NewLabel("Anonymous User"),
+				widget.NewLabel("Interests: "),
 				image,
 			)
 		},
@@ -134,12 +141,19 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			user := outgoingFriendRequests[i]
 			vertContainer := o.(*fyne.Container)
 
-			if len(user.Interests) > 0 && user.Interests[0].Image != nil {
-				image := vertContainer.Objects[1].(*canvas.Image)
+			interests_label := vertContainer.Objects[1].(*widget.Label)
+			interests_label.SetText("Interests: " + formatInterests(user.Interests))
 
-				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
-				image.FillMode = canvas.ImageFillContain
+		out:
+			for i := 0; i < len(user.Interests); i++ {
+				if user.Interests[i].Image != nil {
+					image := vertContainer.Objects[2].(*canvas.Image)
+					image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[i].Image)
+					image.FillMode = canvas.ImageFillContain
+					break out
+				}
 			}
+
 		},
 	)
 	return container.NewGridWithColumns(2,
@@ -164,28 +178,31 @@ func createFriendsUI() fyne.CanvasObject {
 	friendsList = widget.NewList(
 		func() int { return len(currentFriends) },
 		func() fyne.CanvasObject {
-			return container.NewHBox(
-				canvas.NewImageFromResource(nil),
-				container.NewVBox(
-					widget.NewLabel("Name"),
-					widget.NewLabel("Common Interests"),
-				),
+			image := &canvas.Image{}
+			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
+
+			return container.NewVBox(
+				widget.NewLabel("Name"),
+				widget.NewLabel("Interests: "),
+				image,
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			friend := currentFriends[i]
 			container := o.(*fyne.Container)
-			img := container.Objects[0].(*canvas.Image)
-			details := container.Objects[1].(*fyne.Container)
 
-			img.Resource = nil
-			img.SetMinSize(fyne.NewSize(48, 48))
+			nameLabel := container.Objects[0].(*widget.Label)
+			nameLabel.SetText("Name: " + friend.Name)
 
-			nameLabel := details.Objects[0].(*widget.Label)
-			nameLabel.SetText(friend.Name)
+			interestsLabel := container.Objects[1].(*widget.Label)
+			interestsLabel.SetText("Interests: " + formatInterests(friend.User.Interests))
 
-			interestsLabel := details.Objects[1].(*widget.Label)
-			interestsLabel.SetText(formatInterests(middle.CommonInterests(friend.User.UserID)))
+			if imageUrl := getImage(friend.User.Interests); imageUrl != nil {
+				image := container.Objects[3].(*canvas.Image)
+				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
+				image.FillMode = canvas.ImageFillContain
+			}
+
 		},
 	)
 
@@ -220,30 +237,36 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 		func() fyne.CanvasObject {
 			image := &canvas.Image{}
 			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
-			return container.NewVBox(container.NewHBox(
-				widget.NewLabel("User ID"),
+			return container.NewVBox(
+				widget.NewLabel("Anonymous User"),
 				layout.NewSpacer(),
-				widget.NewButton("Learn More", nil),
-			),
+				widget.NewLabel("Interests: "),
 				image,
+				widget.NewButton("Send Friend Request", nil),
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			user := currentUsers[i]
-			vertContainer := o.(*fyne.Container)
-			container := vertContainer.Objects[0].(*fyne.Container)
+			container := o.(*fyne.Container)
 
-			button := container.Objects[2].(*widget.Button)
-			button.OnTapped = func() {
-				middle.Seen(user.UserID)
-				showUserDetailsDialog(user, myWindow)
-			}
+			interests_label := container.Objects[2].(*widget.Label)
+			interests_label.Text = "Interests: " + formatInterests(user.Interests)
+			interests_label.Refresh()
 
-			if len(user.Interests) > 0 && user.Interests[0].Image != nil {
-				image := vertContainer.Objects[1].(*canvas.Image)
-				image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[0].Image)
+			if imageUrl := getImage(user.Interests); imageUrl != nil {
+				image := container.Objects[3].(*canvas.Image)
+				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
 				image.FillMode = canvas.ImageFillContain
 			}
+
+			button := container.Objects[4].(*widget.Button)
+
+			button.OnTapped = func() {
+				middle.Seen(user.UserID)
+				middle.SendFriendRequest(user.UserID, true)
+				dialog.ShowInformation("Request Sent", "Friend request sent!", myWindow)
+			}
+
 		},
 	)
 	return container.NewBorder(nil, nil, nil, nil, usersList)
