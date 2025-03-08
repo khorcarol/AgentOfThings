@@ -35,6 +35,12 @@ func (p defaultDirProvider) GetCacheDir() (string, error) {
 // concrete implementation of dirProvider
 var provider dirProvider = defaultDirProvider{}
 
+var profileSubdirectory *string
+
+func SetProfileSubdirectory(subdir string) {
+	profileSubdirectory = &subdir
+}
+
 // returns directory where data should be stored
 func GetStorageDir() (string, error) {
 	configDir, err := provider.GetConfigDir()
@@ -43,6 +49,10 @@ func GetStorageDir() (string, error) {
 	}
 
 	storageDir := filepath.Join(configDir, appDirName)
+	if profileSubdirectory != nil {
+		storageDir = filepath.Join(storageDir, *profileSubdirectory)
+	}
+
 	if err := os.MkdirAll(storageDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create storage directory: %w", err)
 	}
@@ -57,6 +67,10 @@ func GetCacheDir() (string, error) {
 	}
 
 	storageDir := filepath.Join(configDir, appDirName)
+	if profileSubdirectory != nil {
+		storageDir = filepath.Join(storageDir, *profileSubdirectory)
+	}
+
 	if err := os.MkdirAll(storageDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}

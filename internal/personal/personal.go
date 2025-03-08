@@ -14,7 +14,7 @@ import (
 
 var self api.Friend
 
-func init() {
+func Init() {
 	uuid, _ := GetUUID()
 	id := api.ID{Address: uuid}
 	interests := sources.GetInterests()
