@@ -76,3 +76,7 @@ func GetName() string {
 func AddInterest(interest api.Interest) {
 	self.User.Interests = append(self.User.Interests, interest)
 }
+
+func AddName(name string) {
+	self.Name = name
+}
