@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	appDirName      = "agentofthings"
+	appDirName      = "AgentOfThings"
 	friendsFileName = "friends.json"
 )
 
