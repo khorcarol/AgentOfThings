@@ -77,7 +77,7 @@ func frRequest(in []api.User, out []api.User) {
 }
 
 func getImage(interests []api.Interest) *string {
-	for i := 0; i < len(interests); i++ {
+	for i := range interests {
 		if interests[i].Image != nil {
 			return interests[i].Image
 		}
@@ -145,7 +145,7 @@ func createFriendRequestsUI() fyne.CanvasObject {
 			interests_label.SetText("Interests: " + formatInterests(user.Interests))
 
 		out:
-			for i := 0; i < len(user.Interests); i++ {
+			for i := range user.Interests {
 				if user.Interests[i].Image != nil {
 					image := vertContainer.Objects[2].(*canvas.Image)
 					image.Resource, _ = fyne.LoadResourceFromURLString(*user.Interests[i].Image)
@@ -217,6 +217,7 @@ func onRefreshFriends(friends []api.Friend) {
 }
 
 func onRefreshUsers(users []api.User) {
+	log.Print(users)
 	currentUsers = users
 	if usersList != nil {
 		usersList.Refresh()
