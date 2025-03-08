@@ -40,12 +40,12 @@ func GetUUID() (uuid.UUID, error) {
 // getUUIDInternal reads the UUID from the appdata cache file, or creates a cache file if not found.
 func getUUIDInternal() (uuid.UUID, error) {
 	// Obtain the platform-specific configuration directory.
-	cacheDir, err := storage.GetCacheDir()
+	configDir, err := storage.GetStorageDir()
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to get user cache dir: %w", err)
 	}
 
-	uuidFilePath := filepath.Join(cacheDir, uuidFileName)
+	uuidFilePath := filepath.Join(configDir, uuidFileName)
 
 	if info, err := os.Stat(uuidFilePath); err == nil && !info.IsDir() {
 		// File exists; read and unmarshal the stored UUID.
