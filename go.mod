@@ -7,6 +7,7 @@ require (
 	github.com/LukeHagar/plexgo v0.19.0
 	github.com/google/uuid v1.6.0
 	github.com/libp2p/go-libp2p v0.38.2
+	github.com/vishalkuo/bimap v0.0.0-20230830142743-a9fb9b52066c
 )
 
 require (
@@ -115,7 +116,6 @@ require (
 	github.com/srwiley/oksvg v0.0.0-20221011165216-be6e8873101c // indirect
 	github.com/srwiley/rasterx v0.0.0-20220730225603-2ab79fcdd4ef // indirect
 	github.com/stretchr/testify v1.10.0 // indirect
-	github.com/vishalkuo/bimap v0.0.0-20230830142743-a9fb9b52066c // indirect
 	github.com/wlynxg/anet v0.0.5 // indirect
 	github.com/yuin/goldmark v1.7.1 // indirect
 	go.uber.org/dig v1.18.0 // indirect
