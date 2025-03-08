@@ -38,7 +38,7 @@ jobs:
           golangci-lint run ./... --fast --timeout=5m --skip-dirs '(^|/)(pkg/mod|opt/hostedtoolcache/go)($|/)'
 
   format:
-    name: Format Code
+    name: Run Formatting
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, 'Merge pull request') && !startsWith(github.event.head_commit.message, 'ci:')"
     steps:
@@ -53,9 +53,9 @@ jobs:
       - name: Install Go modules
         run: go mod download
 
-      - name: Reformat Code
+      - name: Check Formatting
         run: |
-          go fmt ./...
+          test -z "$(go fmt ./...)"
 
   test:
     name: Run Go Tests
