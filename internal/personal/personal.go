@@ -20,7 +20,7 @@ func Init() {
 	interests := sources.GetInterests()
 	us := api.User{UserID: id, Interests: interests, Seen: false}
 
-	self = api.Friend{User: us, Photo: GetPicture(), Name: GetName()}
+	self = api.Friend{User: us, Photo: api.ImageData{Img: GetPicture()}, Name: GetName()}
 }
 
 // Returns self, the Friend struct containing our personal data
