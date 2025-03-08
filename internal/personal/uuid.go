@@ -9,11 +9,11 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
+	"github.com/khorcarol/AgentOfThings/internal/storage"
 )
 
 const (
-	appCacheDirName = "AgentOfThings"
-	uuidFileName    = "uuid.json"
+	uuidFileName = "uuid.json"
 )
 
 type uuidConfig struct {
@@ -40,13 +40,12 @@ func GetUUID() (uuid.UUID, error) {
 // getUUIDInternal reads the UUID from the appdata cache file, or creates a cache file if not found.
 func getUUIDInternal() (uuid.UUID, error) {
 	// Obtain the platform-specific configuration directory.
-	cacheDir, err := os.UserCacheDir()
+	cacheDir, err := storage.GetCacheDir()
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to get user cache dir: %w", err)
 	}
 
-	appConfigPath := filepath.Join(cacheDir, appCacheDirName)
-	uuidFilePath := filepath.Join(appConfigPath, uuidFileName)
+	uuidFilePath := filepath.Join(cacheDir, uuidFileName)
 
 	if info, err := os.Stat(uuidFilePath); err == nil && !info.IsDir() {
 		// File exists; read and unmarshal the stored UUID.
@@ -70,10 +69,6 @@ func getUUIDInternal() (uuid.UUID, error) {
 	} else if err != nil && !os.IsNotExist(err) {
 		// Shouldn't happen if the OS plays ball.
 		return uuid.Nil, fmt.Errorf("failed to check for UUID file: %w", err)
-	}
-
-	if err := os.MkdirAll(appConfigPath, 0755); err != nil {
-		return uuid.Nil, fmt.Errorf("failed to create config directory: %w", err)
 	}
 
 	newUUID := uuid.New()

@@ -9,6 +9,7 @@ import (
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/sources"
+	"github.com/khorcarol/AgentOfThings/internal/storage"
 )
 
 var self api.Friend
@@ -29,8 +30,8 @@ func GetSelf() api.Friend {
 
 func getCandidatePaths() []string {
 	var paths []string
-	if cachePath, err := os.UserCacheDir(); err == nil {
-		paths = append(paths, filepath.Join(cachePath, "AgentOfThings", "profile", "profilePicture.png"))
+	if cachePath, err := storage.GetCacheDir(); err == nil {
+		paths = append(paths, filepath.Join(cachePath, "profile", "profilePicture.png"))
 	}
 	paths = append(paths, filepath.Join("assets", "blank-profile.png"))
 	return paths

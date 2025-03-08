@@ -18,12 +18,17 @@ const (
 // dirProvider interface for getting system directories
 type dirProvider interface {
 	GetConfigDir() (string, error)
+	GetCacheDir() (string, error)
 }
 
 // defaultDirProvider implements dirProvider
 type defaultDirProvider struct{}
 
 func (p defaultDirProvider) GetConfigDir() (string, error) {
+	return os.UserConfigDir()
+}
+
+func (p defaultDirProvider) GetCacheDir() (string, error) {
 	return os.UserConfigDir()
 }
 
@@ -40,6 +45,20 @@ func GetStorageDir() (string, error) {
 	storageDir := filepath.Join(configDir, appDirName)
 	if err := os.MkdirAll(storageDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create storage directory: %w", err)
+	}
+
+	return storageDir, nil
+}
+
+func GetCacheDir() (string, error) {
+	configDir, err := provider.GetCacheDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get cache directory: %w", err)
+	}
+
+	storageDir := filepath.Join(configDir, appDirName)
+	if err := os.MkdirAll(storageDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
 	return storageDir, nil
