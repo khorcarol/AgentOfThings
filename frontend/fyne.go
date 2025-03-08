@@ -4,12 +4,8 @@
 package frontend
 
 import (
-	// "time"
-
 	"image/color"
 	"log"
-	"strings"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
@@ -302,18 +298,14 @@ func ShowLoginForm(window fyne.Window) {
 		"Submit",
 		"Cancel",
 		[]*widget.FormItem{
+			widget.NewFormItem("Name", nameEntry),
 			widget.NewFormItem("Interests", interestsEntry),
 		},
 		func(ok bool) {
 			if ok {
 				personal.AddInterest(api.Interest{Category: 4, Description: interestsEntry.Text})
+				personal.SetName(nameEntry.Text)
 
-				var descriptions []string
-				for _, interest := range personal.GetSelf().User.Interests {
-					descriptions = append(descriptions, interest.Description)
-				}
-
-				dialog.ShowInformation("Welcome", "Hello"+"!\nInterests: "+strings.Join(descriptions, ", "), window)
 			} else {
 				window.Close()
 			}
