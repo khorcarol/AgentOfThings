@@ -2,6 +2,7 @@ package middle
 
 import (
 	"log"
+	"slices"
 	"sort"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
@@ -69,11 +70,17 @@ func addUser(user api.User) {
 func removeUser(id api.ID) {
 	delete(users, id)
 
-	i := sort.Search(len(ranked_users), func(idx int) bool { return ranked_users[idx].id == id })
-	if i == len(ranked_users) {
+	i := slices.IndexFunc(ranked_users, func(e struct {
+		id    api.ID
+		score int
+	}) bool {
+		return e.id == id
+	})
+	if i == -1 {
+		// No such user found, return.
 		return
 	}
-	ranked_users = append(ranked_users[:i], ranked_users[i+1:]...)
+	ranked_users = slices.Delete(ranked_users, i, i+1)
 }
 
 // Sets the user to seen
