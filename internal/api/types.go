@@ -1,8 +1,6 @@
 package api
 
 import (
-	"image"
-
 	"github.com/google/uuid"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 )
@@ -24,7 +22,7 @@ type User struct {
 // A [Friend] is a [User] who we have requested to be friends with, and who has also requested to be friends with us.
 type Friend struct {
 	User  User
-	Photo image.Image `json:"-"`
+	Photo ImageData
 	Name  string
 }
 
