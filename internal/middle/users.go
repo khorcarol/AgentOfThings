@@ -44,7 +44,7 @@ func addNewFriend(id api.ID, user api.Friend) {
 func addFriend(id api.ID, user api.Friend) {
 	friends[id] = user
 	frontend_functions.friend_refresh(getFriendList())
-	
+
 }
 
 // Assigns a score to a user, based on number of matches
