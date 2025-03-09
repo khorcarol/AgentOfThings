@@ -41,9 +41,9 @@ func (id ID) String() string {
 }
 
 func (id ID) MarshalText() ([]byte, error) {
-	return id.MarshalText()
+	return id.Address.MarshalText()
 }
 
 func (id ID) UnmarshalText(text []byte) error {
-	return id.UnmarshalText(text)
+	return id.Address.UnmarshalText(text)
 }
