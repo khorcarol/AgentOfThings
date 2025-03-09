@@ -196,7 +196,6 @@ func discoverUser() {
 	}
 
 	if friend_opt.GetSet() {
-		log.Printf("SUCCESS: FRIEND FOUND")
 		friend := friend_opt.GetVal()
 		addFriend(friend.User.UserID, friend)
 		return
