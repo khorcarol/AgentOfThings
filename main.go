@@ -26,16 +26,18 @@ func main() {
 	personal.Init()
 	frontend.Init()
 
-	middle.Start()
-
-	connection_manager := connection.GetCMGR()
 	if personal.IsNewUser() {
 		frontend.InitLoginForm(func(name, interest string) {
+			log.Println("Ok from inside callback")
 			personal.AddInterest(api.Interest{Category: 4, Description: interest})
 			personal.SetName(name)
+			connection_manager := connection.GetCMGR()
+			middle.Start()
 			connection_manager.StartDiscovery()
 		})
 	} else {
+		connection_manager := connection.GetCMGR()
+		middle.Start()
 		connection_manager.StartDiscovery()
 	}
 
