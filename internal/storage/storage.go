@@ -2,8 +2,8 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -102,11 +102,11 @@ func SaveFriends(friends map[api.ID]api.Friend) error {
 		return fmt.Errorf("failed to write friends data to file: %w", err)
 	}
 
-	log.Printf("SAVED FILE")
 	return nil
 }
 
 func SaveFriend(friend api.Friend) error {
+
 	storageDir, err := GetStorageDir()
 	if err != nil {
 		return fmt.Errorf("failed to get storage directory: %w", err)
@@ -118,7 +118,9 @@ func SaveFriend(friend api.Friend) error {
 	fjm := make(map[api.ID]FriendJson)
 
 	if err != nil {
-		return fmt.Errorf("failed to read friends data from file: %w", err)
+		if !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("failed to read friends data from file: %w", err)
+		}
 	} else if err := json.Unmarshal(data, &fjm); err != nil {
 		return fmt.Errorf("failed to unmarshal friends data: %w", err)
 	}

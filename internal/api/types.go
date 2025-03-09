@@ -39,3 +39,11 @@ type FriendRequest struct {
 func (id ID) String() string {
 	return id.Address.String()
 }
+
+func (id ID) MarshalText() ([]byte, error) {
+	return id.MarshalText()
+}
+
+func (id ID) UnmarshalText(text []byte) error {
+	return id.UnmarshalText(text)
+}
