@@ -32,20 +32,19 @@ func init() {
 	}
 }
 
-func addFriend(id api.ID, user api.Friend) {
+func addNewFriend(id api.ID, user api.Friend) {
+	addFriend(id, user)
 
-	photo := personal.GetSelf().Photo
-	if photo.Img == nil {
-		log.Printf("IMG: NIL")
-	} else {
-		log.Printf("IMG: NOT NIL")
-	}
-
-	friends[id] = user
 	err := storage.SaveFriend(user)
 	if err != nil {
 		log.Printf("Failed to store friend: %s", err)
 	}
+}
+
+func addFriend(id api.ID, user api.Friend) {
+	friends[id] = user
+	frontend_functions.friend_refresh(getFriendList())
+	
 }
 
 // Assigns a score to a user, based on number of matches
@@ -196,12 +195,12 @@ func discoverUser() {
 		log.Fatalf("Error checking friend: %s", err)
 	}
 
-	if friend_opt.GetSet(){
+	if friend_opt.GetSet() {
+		log.Printf("SUCCESS: FRIEND FOUND")
 		friend := friend_opt.GetVal()
 		addFriend(friend.User.UserID, friend)
 		return
 	}
-
 
 	if _, ok := users[user.UserID]; !ok {
 		addUser(user)
@@ -223,7 +222,7 @@ func waitOnFriendRequest() {
 		// check if it is acceptance or rejection
 		if friend_res.Accepted {
 			// if accepted, set as friend and remove from requests
-			addFriend(friend_res.Friend.User.UserID, friend_res.Friend)
+			addNewFriend(friend_res.Friend.User.UserID, friend_res.Friend)
 			frontend_functions.friend_refresh(getFriendList())
 		} else {
 			// if rejected, set as user and remove from requests
