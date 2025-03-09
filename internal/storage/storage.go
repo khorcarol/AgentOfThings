@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/lib/option"
 )
 
 const (
@@ -167,6 +168,35 @@ func LoadFriends() (map[api.ID]api.Friend, error) {
 	}
 
 	return friends, nil
+}
+
+func CheckFriend(id api.ID) (option.Option[api.Friend], error) {
+	storageDir, err := GetStorageDir()
+	if err != nil {
+		return option.OptionNil[api.Friend](), fmt.Errorf("failed to get storage directory: %w", err)
+	}
+
+	filePath := filepath.Join(storageDir, friendsFileName)
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return option.OptionNil[api.Friend](), nil
+		}
+		return option.OptionNil[api.Friend](), fmt.Errorf("failed to read friends data from file: %w", err)
+	}
+
+	var fjs map[api.ID]FriendJson
+	if err := json.Unmarshal(data, &fjs); err != nil {
+		return option.OptionNil[api.Friend](), fmt.Errorf("failed to unmarshal friends data: %w", err)
+	}
+
+	fr, lookup := fjs[id]
+
+	if lookup {
+		return option.OptionVal[api.Friend](friendJsonToFriend(fr)), nil
+	} else {
+		return option.OptionNil[api.Friend](), nil
+	}
 }
 
 func LoadUserName() (string, error) {

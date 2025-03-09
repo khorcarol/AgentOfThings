@@ -9,6 +9,7 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/connection"
 	"github.com/khorcarol/AgentOfThings/internal/personal"
 	"github.com/khorcarol/AgentOfThings/internal/storage"
+	"golang.org/x/tools/ge"
 )
 
 var (
@@ -190,7 +191,19 @@ func discoverUser() {
 	cmgr := connection.GetCMGR()
 	user := <-cmgr.IncomingUsers
 
-	// TODO: Check if stored friend
+	// Check if stored friend
+	friend_opt, err := storage.CheckFriend(user.UserID)
+	if err != nil {
+		log.Fatalf("Error checking friend: %s", err)
+	}
+
+	if friend_opt.GetSet(){
+		friend := friend_opt.GetVal()
+		addFriend(friend.User.UserID, friend)
+		return
+	}
+
+
 	if _, ok := users[user.UserID]; !ok {
 		addUser(user)
 		updateCommonInterests(user.UserID, user.Interests)
