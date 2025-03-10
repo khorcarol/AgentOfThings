@@ -7,6 +7,7 @@ import (
 	// "go/format"
 
 	"image/color"
+	"io"
 	"log"
 	"strconv"
 
@@ -16,6 +17,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/storage"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/khorcarol/AgentOfThings/internal/api"
@@ -171,31 +173,39 @@ func createFriendsUI() fyne.CanvasObject {
 	friendsList = widget.NewList(
 		func() int { return len(currentFriends) },
 		func() fyne.CanvasObject {
-			image := &canvas.Image{}
-			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			profileImage := &canvas.Image{}
+			profileImage.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			interestImage := &canvas.Image{}
+			interestImage.SetMinSize(fyne.Size{Width: 200, Height: 200})
 
-			return container.NewVBox(
+			return container.NewHBox(container.NewVBox(
 				widget.NewLabel("Name"),
 				widget.NewLabel("Interests: "),
-				image,
-			)
+			), profileImage, interestImage)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			friend := currentFriends[i]
 			container := o.(*fyne.Container)
 
-			nameLabel := container.Objects[0].(*widget.Label)
+			leftBox := container.Objects[0].(*fyne.Container)
+
+			nameLabel := leftBox.Objects[0].(*widget.Label)
 			nameLabel.SetText("Name: " + friend.Name)
 
-			interestsLabel := container.Objects[1].(*widget.Label)
+			interestsLabel := leftBox.Objects[1].(*widget.Label)
 			interestsLabel.SetText("Interests: " + formatInterests(friend.User.Interests))
+
+			if friend.Photo.Img != nil {
+				image := container.Objects[1].(*canvas.Image)
+				image.Image = friend.Photo.Img
+				image.FillMode = canvas.ImageFillContain
+			}
 
 			if imageUrl := getImage(friend.User.Interests); imageUrl != nil {
 				image := container.Objects[2].(*canvas.Image)
 				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
 				image.FillMode = canvas.ImageFillContain
 			}
-
 		},
 	)
 
@@ -346,12 +356,27 @@ func onRefreshHubs(hubs []api.Hub) {
 
 var myWindow fyne.Window
 
-func InitLoginForm(callback func(name, interest string)) {
+func InitLoginForm(callback func(name, interest string, profileImageReader io.ReadCloser)) {
 	nameEntry := widget.NewEntry()
 	nameEntry.SetPlaceHolder("Enter your name")
 
 	interestsEntry := widget.NewEntry()
 	interestsEntry.SetPlaceHolder("What do you like to do?")
+
+	var profileImageReader io.ReadCloser
+	profileImageButton := widget.NewButton("Add profile image", func() {
+		profileImageDialog := dialog.NewFileOpen(func(reader fyne.URIReadCloser, err error) {
+			if err != nil {
+				log.Printf("Failed to select profile image: %v", err)
+			} else {
+				profileImageReader = reader
+			}
+		}, myWindow)
+
+		profileImageDialog.SetFilter(storage.NewMimeTypeFileFilter([]string{"image/*"}))
+
+		profileImageDialog.Show()
+	})
 
 	loginForm := dialog.NewForm(
 		"Login",
@@ -360,10 +385,11 @@ func InitLoginForm(callback func(name, interest string)) {
 		[]*widget.FormItem{
 			widget.NewFormItem("Name", nameEntry),
 			widget.NewFormItem("Interests", interestsEntry),
+			widget.NewFormItem("Profile Image", profileImageButton),
 		},
 		func(ok bool) {
 			if ok {
-				callback(nameEntry.Text, interestsEntry.Text)
+				callback(nameEntry.Text, interestsEntry.Text, profileImageReader)
 			} else {
 				myWindow.Close()
 			}
