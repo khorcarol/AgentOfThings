@@ -8,6 +8,7 @@ import (
 
 	"image/color"
 	"log"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -25,7 +26,6 @@ import (
 var (
 	primaryColor    = color.NRGBA{R: 0, G: 120, B: 215, A: 255}   // Blue
 	backgroundColor = color.NRGBA{R: 245, G: 245, B: 245, A: 255} // Off-white
-	listItemColor   = color.White
 )
 
 // Custom theme implementation
@@ -269,6 +269,80 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 //		dialog.ShowInformation("Notification", "Friend request has been accepted", win)
 //	}
 
+var (
+	hubsList    *widget.List
+	currentHubs []api.Hub
+)
+
+func createHubsUI() fyne.CanvasObject {
+	hubsList = widget.NewList(
+		func() int { return len(currentHubs) },
+		func() fyne.CanvasObject {
+			return container.NewHBox(
+				widget.NewLabel("Hub"),
+				layout.NewSpacer(),
+				widget.NewButton("Open", nil),
+			)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			// hub := currentHubs[i]
+			container := o.(*fyne.Container)
+
+			nameLabel := container.Objects[0].(*widget.Label)
+			nameLabel.SetText("Hub " + strconv.Itoa(i+1))
+
+			button := container.Objects[2].(*widget.Button)
+			button.OnTapped = func() {
+				log.Println("Open hub")
+				createHubDialog(currentHubs[i], myWindow)
+			}
+		},
+	)
+	return container.NewBorder(nil, nil, nil, nil, hubsList)
+}
+
+func createHubDialog(hub api.Hub, myWindow fyne.Window) {
+
+	messages := widget.NewList(
+		func() int { return len(hub.Messages) },
+		func() fyne.CanvasObject {
+			return container.NewHBox(
+				widget.NewLabel("Message"),
+			)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+
+			message := hub.Messages[i]
+			container := o.(*fyne.Container)
+
+			nameLabel := container.Objects[0].(*widget.Label)
+			nameLabel.SetText(message.Contents)
+
+		},
+	)
+
+	entry := widget.NewEntry()
+	form := &widget.Form{
+		Items: []*widget.FormItem{ // we can specify items in the constructor
+			{Text: "Entry", Widget: entry}},
+		OnSubmit: func() { // optional, handle form submission
+			log.Println("Form submitted:", entry.Text)
+			myWindow.Close()
+		},
+	}
+
+	dialog := dialog.NewCustom("Hub", "Close", container.NewVBox(messages, form), myWindow)
+	dialog.Resize(fyne.NewSize(500, 400))
+	dialog.Show()
+}
+
+func onRefreshHubs(hubs []api.Hub) {
+	if hubsList != nil {
+		currentHubs = hubs
+		hubsList.Refresh()
+	}
+}
+
 var myWindow fyne.Window
 
 func InitLoginForm(callback func(name, interest string)) {
@@ -319,12 +393,19 @@ func Init() {
 		container.NewTabItem("Peers", createUsersUI(myWindow)),
 		container.NewTabItem("Friends", createFriendsUI()),
 		container.NewTabItem("Friend Requests", createFriendRequestsUI()),
+		container.NewTabItem("Hubs", createHubsUI()),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	myWindow.SetContent(tabs)
+
 }
 
 func Run() {
+	onRefreshHubs([]api.Hub{
+		{HubID: api.ID{},
+			Messages: []api.Message{{Author: api.ID{}, Contents: "Hello"}}},
+	})
 	myWindow.ShowAndRun()
+
 }
