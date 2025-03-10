@@ -75,7 +75,7 @@ func SendFriendRequest(userID api.ID, accept bool) {
 		// user has to be in ext_friend_requests
 		if accept {
 			// add to friends
-			addFriend(userID, ext_friend_requests[userID])
+			addNewFriend(userID, ext_friend_requests[userID])
 			frontend_functions.friend_refresh(getFriendList())
 		} else {
 			// discard! return them to users
