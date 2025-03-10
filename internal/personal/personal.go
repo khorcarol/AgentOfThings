@@ -2,7 +2,9 @@ package personal
 
 import (
 	"errors"
+	"fmt"
 	"image"
+	"image/png"
 	"log"
 	"os"
 	"path/filepath"
@@ -13,6 +15,8 @@ import (
 )
 
 var self api.Friend
+
+const profilePictureFileName = "profilePicture.png"
 
 func Init() {
 	uuid, _ := GetUUID()
@@ -28,10 +32,18 @@ func GetSelf() api.Friend {
 	return self
 }
 
+func getProfilePicturePath() (string, error) {
+	storagePath, err := storage.GetStorageDir()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(storagePath, profilePictureFileName), nil
+}
+
 func getCandidatePaths() []string {
 	var paths []string
-	if cachePath, err := storage.GetCacheDir(); err == nil {
-		paths = append(paths, filepath.Join(cachePath, "profile", "profilePicture.png"))
+	if profilePicturePath, err := getProfilePicturePath(); err == nil {
+		paths = append(paths, profilePicturePath)
 	}
 	paths = append(paths, filepath.Join("assets", "blank-profile.png"))
 	return paths
@@ -66,6 +78,27 @@ func GetPicture() image.Image {
 	}
 	// No images could be loaded at all, even the basic.
 	log.Print(errors.New("failed to load a profile picture: " + lastErr.Error()))
+	return nil
+}
+
+func SetPicture(picture image.Image) error {
+	self.Photo.Img = picture
+
+	filePath, err := getProfilePicturePath()
+	if err != nil {
+		return fmt.Errorf("failed to get profile picture path: %w", err)
+	}
+
+	out, err := os.Create(filePath)
+
+	if err != nil {
+		return fmt.Errorf("failed to create user image file: %w", err)
+	}
+
+	if err := png.Encode(out, picture); err != nil {
+		return fmt.Errorf("failed to encode user image: %w", err)
+	}
+
 	return nil
 }
 

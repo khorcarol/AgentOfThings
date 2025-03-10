@@ -1,6 +1,8 @@
 package main
 
 import (
+	"image"
+	"io"
 	"log"
 	"os"
 
@@ -27,13 +29,22 @@ func main() {
 	frontend.Init()
 
 	if personal.IsNewUser() {
-		frontend.InitLoginForm(func(name, interest string) {
+		frontend.InitLoginForm(func(name, interest string, profileImageReader io.ReadCloser) {
 			log.Println("Ok from inside callback")
 			personal.AddInterest(api.Interest{Category: 4, Description: interest})
 			personal.SetName(name)
 			connection_manager := connection.GetCMGR()
 			middle.Start()
 			connection_manager.StartDiscovery()
+
+			profileImage, _, err := image.Decode(profileImageReader)
+			defer profileImageReader.Close()
+
+			if err != nil {
+				log.Printf("Failed to read profile image: %v", err)
+			} else {
+				personal.SetPicture(profileImage)
+			}
 		})
 	} else {
 		connection_manager := connection.GetCMGR()
