@@ -11,7 +11,7 @@ import (
 	"github.com/khorcarol/AgentOfThings/internal/storage"
 )
 
-func getStorageDir() (string, error){
+func getStorageDir() (string, error) {
 	const storagePath = "hub/messages"
 	cdir, err := storage.GetCacheDir()
 	if err != nil {
@@ -20,7 +20,7 @@ func getStorageDir() (string, error){
 	return filepath.Join(cdir, storagePath), nil
 }
 
-func StoreMessage(message api.Message) error{
+func StoreMessage(message api.Message) error {
 
 	data, data_err := json.MarshalIndent(message, "", "  ")
 	if data_err != nil {
@@ -43,17 +43,19 @@ func StoreMessage(message api.Message) error{
 }
 
 func ReadMessages() ([]api.Message, error) {
-	
+
 	ls := []api.Message{}
 
 	sdir, err := getStorageDir()
-	if err != nil{
+	if err != nil {
 		return ls, err
 	}
 
 	// For every file in the path, adds the message to the list
-	filepath.WalkDir(sdir, func (path string, d fs.DirEntry, err error) error {
-		if err != nil {return err}
+	filepath.WalkDir(sdir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
 
 		data, read_err := os.ReadFile(path)
 		if read_err != nil {
