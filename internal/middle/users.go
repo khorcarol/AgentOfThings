@@ -44,7 +44,6 @@ func addNewFriend(id api.ID, user api.Friend) {
 func addFriend(id api.ID, user api.Friend) {
 	friends[id] = user
 	frontend_functions.friend_refresh(getFriendList())
-
 }
 
 // Assigns a score to a user, based on number of matches
@@ -79,7 +78,8 @@ func removeUser(id api.ID) {
 	i := slices.IndexFunc(ranked_users, func(e struct {
 		id    api.ID
 		score int
-	}) bool {
+	},
+	) bool {
 		return e.id == id
 	})
 	if i == -1 {
@@ -214,7 +214,6 @@ func waitOnFriendRequest() {
 	friend_res := <-cmgr.IncomingFriendRequest
 
 	// check whether we are receiving a response or request
-	// TODO: Handle OLD requests/responses
 	_, ok := friend_requests[friend_res.Friend.User.UserID]
 	if ok {
 		// this is a response to a friend request that we sent out

@@ -32,7 +32,6 @@ type ID struct {
 
 type FriendRequest struct {
 	Friend   Friend
-	IsOld    bool
 	Accepted bool
 }
 

@@ -56,7 +56,6 @@ func SendFriendRequest(userID api.ID, accept bool) {
 	// [self] is a package variable, see users.go.
 	fr := api.FriendRequest{
 		Friend:   personal.GetSelf(),
-		IsOld:    false,
 		Accepted: accept,
 	}
 
