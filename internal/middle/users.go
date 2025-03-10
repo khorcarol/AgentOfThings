@@ -220,22 +220,13 @@ func waitOnFriendRequest() {
 		// check if it is acceptance or rejection
 		if friend_res.Accepted {
 			// if accepted, set as friend and remove from requests
+			removeUser(friend_res.Friend.User.UserID)
 			addNewFriend(friend_res.Friend.User.UserID, friend_res.Friend)
-			frontend_functions.friend_refresh(getFriendList())
-		} else {
-			// if rejected, set as user and remove from requests
-			addUser(friend_res.Friend.User)
-			frontend_functions.user_refresh(getUserList())
 		}
 		delete(friend_requests, friend_res.Friend.User.UserID)
-		frontend_functions.fr_refresh(getFriendRequests())
 	} else {
 		// this is a new incoming friend request
-		removeUser(friend_res.Friend.User.UserID)
-
 		ext_friend_requests[friend_res.Friend.User.UserID] = friend_res.Friend
-
-		frontend_functions.fr_refresh(getFriendRequests())
-		frontend_functions.user_refresh(getUserList())
 	}
+	frontend_functions.user_refresh(getUserList())
 }
