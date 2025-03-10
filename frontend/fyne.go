@@ -56,25 +56,6 @@ func (c *customTheme) Color(name fyne.ThemeColorName, _ fyne.ThemeVariant) color
 	}
 }
 
-var (
-	incomingFriendsList    *widget.List
-	outgoingFriendsList    *widget.List
-	outgoingFriendRequests []api.User
-	incomingFriendRequests []api.User
-)
-
-func frRequest(in []api.User, out []api.User) {
-	incomingFriendRequests = in
-	outgoingFriendRequests = out
-	if incomingFriendsList != nil {
-		incomingFriendsList.Refresh()
-	}
-	outgoingFriendRequests = out
-	if outgoingFriendsList != nil {
-		outgoingFriendsList.Refresh()
-	}
-}
-
 func getImage(interests []api.Interest) *string {
 	for i := range interests {
 		if interests[i].Image != nil {
@@ -82,84 +63,6 @@ func getImage(interests []api.Interest) *string {
 		}
 	}
 	return nil
-}
-
-func createFriendRequestsUI() fyne.CanvasObject {
-	incomingFriendsList = widget.NewList(
-		func() int { return len(incomingFriendRequests) },
-		func() fyne.CanvasObject {
-			image := &canvas.Image{}
-			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
-			return container.NewVBox(
-				widget.NewLabel("Anonymous User"),
-				widget.NewLabel("Interests: "),
-				image,
-				widget.NewButton("Accept Friend Request", nil),
-				widget.NewButton("Reject Friend Request", nil),
-			)
-		},
-		func(i widget.ListItemID, o fyne.CanvasObject) {
-			user := incomingFriendRequests[i]
-			vertContainer := o.(*fyne.Container)
-
-			interests_label := vertContainer.Objects[1].(*widget.Label)
-			interests_label.SetText("Interests: " + formatInterests(user.Interests))
-
-			if imageUrl := getImage(user.Interests); imageUrl != nil {
-				image := vertContainer.Objects[2].(*canvas.Image)
-				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
-				image.FillMode = canvas.ImageFillContain
-			}
-
-			button := vertContainer.Objects[3].(*widget.Button)
-			button.OnTapped = func() {
-				log.Println("Accepted friend requests")
-				middle.SendFriendRequest(user.UserID, true)
-			}
-
-			button2 := vertContainer.Objects[4].(*widget.Button)
-			button2.OnTapped = func() {
-				log.Println("Rejected friend requests")
-				middle.SendFriendRequest(user.UserID, false)
-			}
-		},
-	)
-
-	outgoingFriendsList = widget.NewList(
-		func() int { return len(outgoingFriendRequests) },
-		func() fyne.CanvasObject {
-			image := &canvas.Image{}
-			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
-			return container.NewVBox(
-				widget.NewLabel("Anonymous User"),
-				widget.NewLabel("Interests: "),
-				image,
-			)
-		},
-		func(i widget.ListItemID, o fyne.CanvasObject) {
-			user := outgoingFriendRequests[i]
-			vertContainer := o.(*fyne.Container)
-
-			interests_label := vertContainer.Objects[1].(*widget.Label)
-			interests_label.SetText("Interests: " + formatInterests(user.Interests))
-
-			if imageUrl := getImage(user.Interests); imageUrl != nil {
-				image := vertContainer.Objects[2].(*canvas.Image)
-				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
-				image.FillMode = canvas.ImageFillContain
-			}
-
-		},
-	)
-	return container.NewGridWithColumns(2,
-		container.NewBorder(
-			widget.NewLabel("Incoming Friend Requests"),
-			nil, nil, nil, incomingFriendsList,
-		),
-		container.NewBorder(
-			widget.NewLabel("Outgoing Friend Requests"),
-			nil, nil, nil, outgoingFriendsList,
-		))
 }
 
 var (
@@ -246,6 +149,7 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 				widget.NewLabel("Interests: "),
 				image,
 				widget.NewButton("Send Friend Request", nil),
+				widget.NewButton("Reject Friend Request", nil),
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
@@ -262,14 +166,28 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 				image.FillMode = canvas.ImageFillContain
 			}
 
-			button := container.Objects[4].(*widget.Button)
+			friendButton := container.Objects[4].(*widget.Button)
 
-			button.OnTapped = func() {
+			friendButton.OnTapped = func() {
 				middle.Seen(user.UserID)
 				middle.SendFriendRequest(user.UserID, true)
-				dialog.ShowInformation("Request Sent", "Friend request sent!", myWindow)
 			}
 
+			rejectButton := container.Objects[5].(*widget.Button)
+
+			rejectButton.OnTapped = func() {
+				middle.Seen(user.UserID)
+				middle.SendFriendRequest(user.UserID, false)
+			}
+			rejectButton.Hide()
+
+			if middle.HasIncomingFriendRequest(user.UserID) {
+				friendButton.SetText("Accept friend request")
+				rejectButton.Show()
+			} else if middle.HasOutgoingFriendRequest(user.UserID) {
+				friendButton.SetText("Friend request sent")
+				friendButton.Disable()
+			}
 		},
 	)
 	return container.NewBorder(nil, nil, nil, nil, usersList)
@@ -402,7 +320,7 @@ func InitLoginForm(callback func(name, interest string, profileImageReader io.Re
 }
 
 func Init() {
-	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest, onRefreshHubs)
+	middle.Pass(onRefreshFriends, onRefreshUsers, onRefreshHubs)
 
 	regularFont := resourceInter24ptBoldTtf
 
@@ -419,7 +337,6 @@ func Init() {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Peers", createUsersUI(myWindow)),
 		container.NewTabItem("Friends", createFriendsUI()),
-		container.NewTabItem("Friend Requests", createFriendRequestsUI()),
 		container.NewTabItem("Hubs", createHubsUI()),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
