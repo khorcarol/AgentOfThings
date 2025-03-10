@@ -18,7 +18,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/khorcarol/AgentOfThings/internal/api"
-	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
 )
 
@@ -264,40 +263,6 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 		},
 	)
 	return container.NewBorder(nil, nil, nil, nil, usersList)
-}
-
-func showUserDetailsDialog(user api.User, parent fyne.Window) {
-	content := container.NewVBox(
-		widget.NewSeparator(),
-		widget.NewLabel("Interests:"),
-	)
-
-	for _, interest := range user.Interests {
-		log.Println(interest.Description)
-		content.Add(widget.NewLabel("- " + interests.String(interest.Category) + ": " + interest.Description))
-	}
-
-	var userDetailsDialog dialog.Dialog
-
-	sendBtn := widget.NewButton("Send Friend Request", func() {
-		middle.SendFriendRequest(user.UserID, true)
-		dialog.ShowInformation("Request Sent", "Friend request sent!", parent)
-	})
-	closeBtn := widget.NewButton("Close", func() {
-		userDetailsDialog.Hide()
-	})
-
-	buttons := container.NewHBox(
-		sendBtn,
-		closeBtn,
-	)
-	content.Add(buttons)
-	userDetailsDialog = dialog.NewCustomWithoutButtons("User Details",
-		content,
-		parent,
-	)
-
-	userDetailsDialog.Show()
 }
 
 //	func showPopup(win fyne.Window) {
