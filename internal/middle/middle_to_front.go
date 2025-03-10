@@ -17,10 +17,9 @@ type FrontEndFunctions struct {
 
 var frontend_functions FrontEndFunctions
 
-func Pass(refreshfriends func(friends []api.Friend), refreshusers func(users []api.User), fr_refresh func(in []api.User, out []api.User), hubs_refresh func(hubs []api.Hub)) {
+func Pass(refreshfriends func(friends []api.Friend), refreshusers func(users []api.User), hubs_refresh func(hubs []api.Hub)) {
 	frontend_functions.friend_refresh = refreshfriends
 	frontend_functions.user_refresh = refreshusers
-	frontend_functions.fr_refresh = fr_refresh
 	frontend_functions.hubs_refresh = hubs_refresh
 }
 
@@ -41,6 +40,16 @@ func GetFriends() []api.Friend {
 	}
 
 	return ret
+}
+
+func HasOutgoingFriendRequest(userID api.ID) bool {
+	_, exists := friend_requests[userID]
+	return exists
+}
+
+func HasIncomingFriendRequest(userID api.ID) bool {
+	_, exists := ext_friend_requests[userID]
+	return exists
 }
 
 func SendFriendRequest(userID api.ID, accept bool) {
@@ -65,25 +74,18 @@ func SendFriendRequest(userID api.ID, accept bool) {
 
 	// this has to be different depending on whether we are sending a request or response
 
-	if _, ok := users[userID]; ok {
-		// sending out a new request
-		removeUser(userID)
-		friend_requests[userID] = user
-
-		frontend_functions.fr_refresh(getFriendRequests())
-		frontend_functions.user_refresh(getUserList())
-	} else {
+	if incomingFriend, ok := ext_friend_requests[userID]; ok {
 		// user has to be in ext_friend_requests
 		if accept {
 			// add to friends
-			addNewFriend(userID, ext_friend_requests[userID])
-			frontend_functions.friend_refresh(getFriendList())
-		} else {
-			// discard! return them to users
-			addUser(ext_friend_requests[userID].User)
-			frontend_functions.user_refresh(getUserList())
+			removeUser(userID)
+			addNewFriend(userID, incomingFriend)
 		}
 		delete(ext_friend_requests, userID)
-		frontend_functions.fr_refresh(getFriendRequests())
+	} else {
+		// sending out a new request
+		friend_requests[userID] = user
 	}
+
+	frontend_functions.user_refresh(getUserList())
 }
