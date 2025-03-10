@@ -327,12 +327,13 @@ func createHubDialog(hub api.Hub, myWindow fyne.Window) {
 			{Text: "Entry", Widget: entry}},
 		OnSubmit: func() { // optional, handle form submission
 			log.Println("Form submitted:", entry.Text)
-			myWindow.Close()
+			entry.SetText("")
+			// TODO: send message to hub ID
 		},
 	}
 
 	dialog := dialog.NewCustom("Hub", "Close", container.NewVBox(messages, form), myWindow)
-	dialog.Resize(fyne.NewSize(500, 400))
+	dialog.Resize(fyne.NewSize(500, 200))
 	dialog.Show()
 }
 
@@ -375,7 +376,7 @@ func InitLoginForm(callback func(name, interest string)) {
 }
 
 func Init() {
-	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest)
+	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest, onRefreshHubs)
 
 	regularFont := resourceInter24ptBoldTtf
 

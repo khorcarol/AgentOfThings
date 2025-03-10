@@ -12,14 +12,16 @@ type FrontEndFunctions struct {
 	friend_refresh func(friends []api.Friend)
 	user_refresh   func(users []api.User)
 	fr_refresh     func(in []api.User, out []api.User)
+	hubs_refresh   func(hubs []api.Hub)
 }
 
 var frontend_functions FrontEndFunctions
 
-func Pass(refreshfriends func(friends []api.Friend), refreshusers func(users []api.User), fr_refresh func(in []api.User, out []api.User)) {
+func Pass(refreshfriends func(friends []api.Friend), refreshusers func(users []api.User), fr_refresh func(in []api.User, out []api.User), hubs_refresh func(hubs []api.Hub)) {
 	frontend_functions.friend_refresh = refreshfriends
 	frontend_functions.user_refresh = refreshusers
 	frontend_functions.fr_refresh = fr_refresh
+	frontend_functions.hubs_refresh = hubs_refresh
 }
 
 func CommonInterests(userID api.ID) []api.Interest {
