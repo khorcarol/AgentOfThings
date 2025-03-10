@@ -1,6 +1,8 @@
 package api
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 )
@@ -41,8 +43,9 @@ type Hub struct {
 }
 
 type Message struct {
-	Author   ID
-	Contents string
+	Author    ID
+	Contents  string
+	Timestamp time.Time
 }
 
 func (id ID) String() string {
