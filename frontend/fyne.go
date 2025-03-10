@@ -8,6 +8,7 @@ import (
 
 	"image/color"
 	"log"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -18,7 +19,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/khorcarol/AgentOfThings/internal/api"
-	"github.com/khorcarol/AgentOfThings/internal/api/interests"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
 )
 
@@ -26,7 +26,6 @@ import (
 var (
 	primaryColor    = color.NRGBA{R: 0, G: 120, B: 215, A: 255}   // Blue
 	backgroundColor = color.NRGBA{R: 245, G: 245, B: 245, A: 255} // Off-white
-	listItemColor   = color.White
 )
 
 // Custom theme implementation
@@ -266,43 +265,84 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 	return container.NewBorder(nil, nil, nil, nil, usersList)
 }
 
-func showUserDetailsDialog(user api.User, parent fyne.Window) {
-	content := container.NewVBox(
-		widget.NewSeparator(),
-		widget.NewLabel("Interests:"),
-	)
-
-	for _, interest := range user.Interests {
-		log.Println(interest.Description)
-		content.Add(widget.NewLabel("- " + interests.String(interest.Category) + ": " + interest.Description))
-	}
-
-	var userDetailsDialog dialog.Dialog
-
-	sendBtn := widget.NewButton("Send Friend Request", func() {
-		middle.SendFriendRequest(user.UserID, true)
-		dialog.ShowInformation("Request Sent", "Friend request sent!", parent)
-	})
-	closeBtn := widget.NewButton("Close", func() {
-		userDetailsDialog.Hide()
-	})
-
-	buttons := container.NewHBox(
-		sendBtn,
-		closeBtn,
-	)
-	content.Add(buttons)
-	userDetailsDialog = dialog.NewCustomWithoutButtons("User Details",
-		content,
-		parent,
-	)
-
-	userDetailsDialog.Show()
-}
-
 //	func showPopup(win fyne.Window) {
 //		dialog.ShowInformation("Notification", "Friend request has been accepted", win)
 //	}
+
+var (
+	hubsList    *widget.List
+	currentHubs []api.Hub
+)
+
+func createHubsUI() fyne.CanvasObject {
+	hubsList = widget.NewList(
+		func() int { return len(currentHubs) },
+		func() fyne.CanvasObject {
+			return container.NewHBox(
+				widget.NewLabel("Hub"),
+				layout.NewSpacer(),
+				widget.NewButton("Open", nil),
+			)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+			// hub := currentHubs[i]
+			container := o.(*fyne.Container)
+
+			nameLabel := container.Objects[0].(*widget.Label)
+			nameLabel.SetText("Hub " + strconv.Itoa(i+1))
+
+			button := container.Objects[2].(*widget.Button)
+			button.OnTapped = func() {
+				log.Println("Open hub")
+				createHubDialog(currentHubs[i], myWindow)
+			}
+		},
+	)
+	return container.NewBorder(nil, nil, nil, nil, hubsList)
+}
+
+func createHubDialog(hub api.Hub, myWindow fyne.Window) {
+
+	messages := widget.NewList(
+		func() int { return len(hub.Messages) },
+		func() fyne.CanvasObject {
+			return container.NewHBox(
+				widget.NewLabel("Message"),
+			)
+		},
+		func(i widget.ListItemID, o fyne.CanvasObject) {
+
+			message := hub.Messages[i]
+			container := o.(*fyne.Container)
+
+			nameLabel := container.Objects[0].(*widget.Label)
+			nameLabel.SetText(message.Contents)
+
+		},
+	)
+
+	entry := widget.NewEntry()
+	form := &widget.Form{
+		Items: []*widget.FormItem{ // we can specify items in the constructor
+			{Text: "Entry", Widget: entry}},
+		OnSubmit: func() { // optional, handle form submission
+			log.Println("Form submitted:", entry.Text)
+			entry.SetText("")
+			// TODO: send message to hub ID
+		},
+	}
+
+	dialog := dialog.NewCustom("Hub", "Close", container.NewVBox(messages, form), myWindow)
+	dialog.Resize(fyne.NewSize(500, 200))
+	dialog.Show()
+}
+
+func onRefreshHubs(hubs []api.Hub) {
+	if hubsList != nil {
+		currentHubs = hubs
+		hubsList.Refresh()
+	}
+}
 
 var myWindow fyne.Window
 
@@ -336,7 +376,7 @@ func InitLoginForm(callback func(name, interest string)) {
 }
 
 func Init() {
-	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest)
+	middle.Pass(onRefreshFriends, onRefreshUsers, frRequest, onRefreshHubs)
 
 	regularFont := resourceInter24ptBoldTtf
 
@@ -354,12 +394,19 @@ func Init() {
 		container.NewTabItem("Peers", createUsersUI(myWindow)),
 		container.NewTabItem("Friends", createFriendsUI()),
 		container.NewTabItem("Friend Requests", createFriendRequestsUI()),
+		container.NewTabItem("Hubs", createHubsUI()),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	myWindow.SetContent(tabs)
+
 }
 
 func Run() {
+	onRefreshHubs([]api.Hub{
+		{HubID: api.ID{},
+			Messages: []api.Message{{Author: api.ID{}, Contents: "Hello"}}},
+	})
 	myWindow.ShowAndRun()
+
 }
