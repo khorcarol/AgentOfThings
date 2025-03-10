@@ -56,6 +56,6 @@ func (id ID) MarshalText() ([]byte, error) {
 	return id.Address.MarshalText()
 }
 
-func (id ID) UnmarshalText(text []byte) error {
+func (id *ID) UnmarshalText(text []byte) error {
 	return id.Address.UnmarshalText(text)
 }
