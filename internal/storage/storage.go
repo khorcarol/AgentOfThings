@@ -2,12 +2,13 @@ package storage
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
+	"github.com/khorcarol/AgentOfThings/lib/option"
 )
 
 const (
@@ -102,11 +103,11 @@ func SaveFriends(friends map[api.ID]api.Friend) error {
 		return fmt.Errorf("failed to write friends data to file: %w", err)
 	}
 
-	log.Printf("SAVED FILE")
 	return nil
 }
 
 func SaveFriend(friend api.Friend) error {
+
 	storageDir, err := GetStorageDir()
 	if err != nil {
 		return fmt.Errorf("failed to get storage directory: %w", err)
@@ -118,7 +119,9 @@ func SaveFriend(friend api.Friend) error {
 	fjm := make(map[api.ID]FriendJson)
 
 	if err != nil {
-		return fmt.Errorf("failed to read friends data from file: %w", err)
+		if !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("failed to read friends data from file: %w", err)
+		}
 	} else if err := json.Unmarshal(data, &fjm); err != nil {
 		return fmt.Errorf("failed to unmarshal friends data: %w", err)
 	}
@@ -165,6 +168,35 @@ func LoadFriends() (map[api.ID]api.Friend, error) {
 	}
 
 	return friends, nil
+}
+
+func CheckFriend(id api.ID) (option.Option[api.Friend], error) {
+	storageDir, err := GetStorageDir()
+	if err != nil {
+		return option.OptionNil[api.Friend](), fmt.Errorf("failed to get storage directory: %w", err)
+	}
+
+	filePath := filepath.Join(storageDir, friendsFileName)
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return option.OptionNil[api.Friend](), nil
+		}
+		return option.OptionNil[api.Friend](), fmt.Errorf("failed to read friends data from file: %w", err)
+	}
+
+	var fjs map[api.ID]FriendJson
+	if err := json.Unmarshal(data, &fjs); err != nil {
+		return option.OptionNil[api.Friend](), fmt.Errorf("failed to unmarshal friends data: %w", err)
+	}
+
+	fr, lookup := fjs[id]
+
+	if lookup {
+		return option.OptionVal[api.Friend](friendJsonToFriend(fr)), nil
+	} else {
+		return option.OptionNil[api.Friend](), nil
+	}
 }
 
 func LoadUserName() (string, error) {

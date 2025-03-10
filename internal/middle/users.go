@@ -32,13 +32,19 @@ func init() {
 	}
 }
 
-func saveFriends() {
-	_ = storage.SaveFriends(friends)
+func addNewFriend(id api.ID, user api.Friend) {
+	addFriend(id, user)
+
+	err := storage.SaveFriend(user)
+	if err != nil {
+		log.Printf("Failed to store friend: %s", err)
+	}
 }
 
-func AddFriend(id api.ID, user api.Friend) {
+func addFriend(id api.ID, user api.Friend) {
 	friends[id] = user
-	saveFriends()
+	frontend_functions.friend_refresh(getFriendList())
+
 }
 
 // Assigns a score to a user, based on number of matches
@@ -183,7 +189,18 @@ func discoverUser() {
 	cmgr := connection.GetCMGR()
 	user := <-cmgr.IncomingUsers
 
-	// TODO: Check if stored friend
+	// Check if stored friend
+	friend_opt, err := storage.CheckFriend(user.UserID)
+	if err != nil {
+		log.Fatalf("Error checking friend: %s", err)
+	}
+
+	if friend_opt.GetSet() {
+		friend := friend_opt.GetVal()
+		addFriend(friend.User.UserID, friend)
+		return
+	}
+
 	if _, ok := users[user.UserID]; !ok {
 		addUser(user)
 		updateCommonInterests(user.UserID, user.Interests)
@@ -204,7 +221,7 @@ func waitOnFriendRequest() {
 		// check if it is acceptance or rejection
 		if friend_res.Accepted {
 			// if accepted, set as friend and remove from requests
-			friends[friend_res.Friend.User.UserID] = friend_res.Friend
+			addNewFriend(friend_res.Friend.User.UserID, friend_res.Friend)
 			frontend_functions.friend_refresh(getFriendList())
 		} else {
 			// if rejected, set as user and remove from requests

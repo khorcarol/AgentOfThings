@@ -22,16 +22,26 @@ func friendToFriendJson(friend api.Friend) FriendJson {
 		log.Fatalf("Could not find storage directory: %s", err)
 	}
 
-	fpath := filepath.Join("images", friend.User.UserID.String())
-	fullPath := filepath.Join(sdir, fpath)
-
-	out, err := os.Create(fullPath)
-	if err != nil {
-		log.Fatalf("Could not create image file: %s", err)
-	}
-	defer out.Close()
+	fpath := ""
 
 	if friend.Photo.Img != nil {
+		log.Print("SAVE IMG: NOT NIL")
+		fpath = filepath.Join("images", friend.User.UserID.String())
+		fullPath := filepath.Join(sdir, fpath)
+
+		// Check if images folder exists, if not create it
+		if _, err_img := os.Stat(filepath.Join(sdir, "images")); os.IsNotExist(err_img) {
+			if err := os.Mkdir(filepath.Join(sdir, "images"), os.ModePerm); err != nil {
+				log.Fatalf("Cannot create images directory: %s", err)
+			}
+		}
+
+		out, err := os.Create(fullPath)
+		if err != nil {
+			log.Fatalf("Could not create image file: %s", err)
+		}
+		defer out.Close()
+
 		if err := png.Encode(out, friend.Photo.Img); err != nil {
 			log.Fatalf("Could not encode image as PNG: %s", err)
 		}
@@ -46,9 +56,12 @@ func friendJsonToFriend(fj FriendJson) api.Friend {
 		log.Fatalf("Could not find storage directory: %s", err)
 	}
 
-	img, err := openImage(filepath.Join(sdir, fj.Photo))
-	if err != nil {
-		log.Fatalf("Could not open image file: %s", err)
+	var img image.Image = nil
+	if fj.Photo != "" {
+		img, err = openImage(filepath.Join(sdir, fj.Photo))
+		if err != nil {
+			log.Fatalf("Could not open image file: %s", err)
+		}
 	}
 
 	return api.Friend{User: fj.User, Photo: api.ImageData{Img: img}, Name: fj.Name}
