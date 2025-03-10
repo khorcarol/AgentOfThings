@@ -174,31 +174,39 @@ func createFriendsUI() fyne.CanvasObject {
 	friendsList = widget.NewList(
 		func() int { return len(currentFriends) },
 		func() fyne.CanvasObject {
-			image := &canvas.Image{}
-			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			profileImage := &canvas.Image{}
+			profileImage.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			interestImage := &canvas.Image{}
+			interestImage.SetMinSize(fyne.Size{Width: 200, Height: 200})
 
-			return container.NewVBox(
+			return container.NewHBox(container.NewVBox(
 				widget.NewLabel("Name"),
 				widget.NewLabel("Interests: "),
-				image,
-			)
+			), profileImage, interestImage)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			friend := currentFriends[i]
 			container := o.(*fyne.Container)
 
-			nameLabel := container.Objects[0].(*widget.Label)
+			leftBox := container.Objects[0].(*fyne.Container)
+
+			nameLabel := leftBox.Objects[0].(*widget.Label)
 			nameLabel.SetText("Name: " + friend.Name)
 
-			interestsLabel := container.Objects[1].(*widget.Label)
+			interestsLabel := leftBox.Objects[1].(*widget.Label)
 			interestsLabel.SetText("Interests: " + formatInterests(friend.User.Interests))
+
+			if friend.Photo.Img != nil {
+				image := container.Objects[1].(*canvas.Image)
+				image.Image = friend.Photo.Img
+				image.FillMode = canvas.ImageFillContain
+			}
 
 			if imageUrl := getImage(friend.User.Interests); imageUrl != nil {
 				image := container.Objects[2].(*canvas.Image)
 				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
 				image.FillMode = canvas.ImageFillContain
 			}
-
 		},
 	)
 
