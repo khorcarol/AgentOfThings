@@ -37,6 +37,10 @@ func main() {
 			middle.Start()
 			connection_manager.StartDiscovery()
 
+			if profileImageReader == nil {
+				return
+			}
+
 			profileImage, _, err := image.Decode(profileImageReader)
 			defer profileImageReader.Close()
 
