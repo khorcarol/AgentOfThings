@@ -35,6 +35,16 @@ type FriendRequest struct {
 	Accepted bool
 }
 
+type Hub struct {
+	HubID    ID
+	Messages []Message
+}
+
+type Message struct {
+	Author   ID
+	Contents string
+}
+
 func (id ID) String() string {
 	return id.Address.String()
 }
