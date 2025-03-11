@@ -137,15 +137,13 @@ func formatInterests(interests []api.Interest) string {
 	return result
 }
 
-func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
+func createUsersUI() fyne.CanvasObject {
 	usersList = widget.NewList(
 		func() int { return len(currentUsers) },
 		func() fyne.CanvasObject {
 			image := &canvas.Image{}
 			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
 			return container.NewVBox(
-				widget.NewLabel("Anonymous User"),
-				layout.NewSpacer(),
 				widget.NewLabel("Interests: "),
 				image,
 				widget.NewButton("Send Friend Request", nil),
@@ -335,7 +333,7 @@ func Init() {
 	})
 
 	tabs := container.NewAppTabs(
-		container.NewTabItem("Peers", createUsersUI(myWindow)),
+		container.NewTabItem("Peers", createUsersUI()),
 		container.NewTabItem("Friends", createFriendsUI()),
 		container.NewTabItem("Hubs", createHubsUI()),
 	)
