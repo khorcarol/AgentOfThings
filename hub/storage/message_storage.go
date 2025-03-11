@@ -2,6 +2,7 @@ package hub_storage
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/fs"
 	"os"
@@ -13,14 +14,28 @@ import (
 
 func getStorageDir() (string, error) {
 	const storagePath = "hub/messages"
-	cdir, err := storage.GetCacheDir()
+	cdir, err := storage.GetStorageDir()
 	if err != nil {
 		return "", fmt.Errorf("error getting cache dir: %s", err)
 	}
-	return filepath.Join(cdir, storagePath), nil
+
+	path := filepath.Join(cdir, storagePath)
+
+	if _, err := os.Stat(path); err != nil {
+		if errors.Is(err, fs.ErrNotExist) {
+			if err := os.MkdirAll(path, os.ModePerm); err != nil {
+				return "", err
+			}
+		} else {
+			return "", err
+		}
+	}
+
+	return path, nil
 }
 
 func StoreMessage(message api.Message) error {
+
 	data, data_err := json.MarshalIndent(message, "", "  ")
 	if data_err != nil {
 		return data_err
@@ -30,7 +45,9 @@ func StoreMessage(message api.Message) error {
 	if path_err != nil {
 		return path_err
 	}
-	path := filepath.Join(sdir, message.Timestamp.String(), message.Author.String())
+
+	filename := fmt.Sprintf("%v_%s", message.Timestamp.Unix(), message.Author)
+	path := filepath.Join(sdir, filename)
 
 	write_err := os.WriteFile(path, data, 0644)
 	if write_err != nil {
@@ -52,6 +69,10 @@ func ReadMessages() ([]api.Message, error) {
 	filepath.WalkDir(sdir, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+
+		if d.IsDir() {
+			return nil
 		}
 
 		data, read_err := os.ReadFile(path)
