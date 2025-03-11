@@ -173,7 +173,7 @@ func CheckFriend(id api.ID) (option.Option[api.Friend], error) {
 	fr, lookup := fjs[id]
 
 	if lookup {
-		return option.OptionVal[api.Friend](friendJsonToFriend(fr)), nil
+		return option.OptionVal(friendJsonToFriend(fr)), nil
 	} else {
 		return option.OptionNil[api.Friend](), nil
 	}
