@@ -24,14 +24,6 @@ var (
 	}){}
 )
 
-// Retrieve friends from storage
-func init() {
-	loadedFriends, err := storage.LoadFriends()
-	if err == nil {
-		friends = loadedFriends
-	}
-}
-
 func addNewFriend(id api.ID, user api.Friend) {
 	addFriend(id, user)
 
