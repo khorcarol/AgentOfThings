@@ -43,19 +43,10 @@ func main() {
 		personal.Init()
 		frontend.Init()
 
-<<<<<<< Updated upstream
-	if personal.IsNewUser() {
-		frontend.InitLoginForm(func(name, interest, contact string, profileImageReader io.ReadCloser) {
-			log.Println("Ok from inside callback")
-			personal.AddInterest(api.Interest{Category: 4, Description: interest})
-			personal.SetPersonal(name, contact)
-=======
 		if personal.IsNewUser() {
 			frontend.InitLoginForm(func(name, interest, contact string, profileImageReader io.ReadCloser) {
-				log.Println("Ok from inside callback")
 				personal.AddInterest(api.Interest{Category: 4, Description: interest})
-				personal.SetName(name)
-				personal.SetContact(contact)
+				personal.SetPersonal(name, contact)
 				connection_manager := connection.GetCMGR()
 				middle.Start()
 				connection_manager.StartDiscovery()
@@ -74,7 +65,6 @@ func main() {
 				}
 			})
 		} else {
->>>>>>> Stashed changes
 			connection_manager := connection.GetCMGR()
 			middle.Start()
 			connection_manager.StartDiscovery()
