@@ -38,6 +38,7 @@ type FriendRequest struct {
 }
 
 type Hub struct {
+	HubName  string
 	HubID    ID
 	Messages []Message
 }
