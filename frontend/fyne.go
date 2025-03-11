@@ -74,41 +74,70 @@ var (
 
 func createFriendsUI() fyne.CanvasObject {
 	friendsList = widget.NewList(
-		func() int { return len(currentFriends) },
+		func() int {
+			return len(currentFriends)
+		},
 		func() fyne.CanvasObject {
+			// Prepare images.
 			profileImage := &canvas.Image{}
-			profileImage.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			profileImage.SetMinSize(fyne.NewSize(200, 200))
 			interestImage := &canvas.Image{}
-			interestImage.SetMinSize(fyne.Size{Width: 200, Height: 200})
+			interestImage.SetMinSize(fyne.NewSize(200, 200))
 
-			return container.NewHBox(container.NewVBox(
+			// Build a VBox for text: Name, Contact and Interests.
+			leftBox := container.NewVBox(
 				widget.NewLabel("Name"),
-				widget.NewLabel("Interests: "),
-			), profileImage, interestImage)
+				widget.NewLabel("Interests:"),
+				widget.NewLabel("Contact:"), // New field for contact info.
+			)
+
+			// Build the list item as an HBox that contains:
+			// leftBox, a spacer, and the padded images on the right.
+			item := container.NewHBox(
+				leftBox,
+				layout.NewSpacer(),                 // Push images to the right.
+				container.NewPadded(profileImage),  // Profile image with padding.
+				container.NewPadded(interestImage), // Interest image with padding.
+			)
+			return item
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			friend := currentFriends[i]
-			container := o.(*fyne.Container)
+			item := o.(*fyne.Container)
 
-			leftBox := container.Objects[0].(*fyne.Container)
-
+			leftBox := item.Objects[0].(*fyne.Container)
+			// leftBox.Objects[0] = Name, [1] = Contact, [2] = Interests.
 			nameLabel := leftBox.Objects[0].(*widget.Label)
-			nameLabel.SetText("Name: " + friend.Name)
+			nameLabel.TextStyle.Bold = true
+			nameLabel.SetText(friend.Name)
 
 			interestsLabel := leftBox.Objects[1].(*widget.Label)
-			interestsLabel.SetText("Interests: " + formatInterests(friend.User.Interests))
+			interestsLabel.SetText(formatInterests(friend.User.Interests))
+
+			contactLabel := leftBox.Objects[2].(*widget.Label)
+			nameLabel.TextStyle.Italic = true
+			contactLabel.SetText(friend.Contact)
 
 			if friend.Photo.Img != nil {
-				image := container.Objects[1].(*canvas.Image)
-				image.Image = friend.Photo.Img
-				image.FillMode = canvas.ImageFillContain
+				if image, ok := item.Objects[3].(*fyne.Container).Objects[0].(*canvas.Image); ok {
+					image.Image = friend.Photo.Img
+					image.FillMode = canvas.ImageFillContain
+					image.Refresh()
+				}
 			}
 
 			if imageUrl := getImage(friend.User.Interests); imageUrl != nil {
-				image := container.Objects[2].(*canvas.Image)
-				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
-				image.FillMode = canvas.ImageFillContain
+				// interestImage is the next element, wrapped in a padded container; index [3]
+				if image, ok := item.Objects[2].(*fyne.Container).Objects[0].(*canvas.Image); ok {
+					resource, err := fyne.LoadResourceFromURLString(*imageUrl)
+					if err == nil {
+						image.Resource = resource
+					}
+					image.FillMode = canvas.ImageFillContain
+					image.Refresh()
+				}
 			}
+
 		},
 	)
 
@@ -137,7 +166,7 @@ func formatInterests(interests []api.Interest) string {
 	return result
 }
 
-func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
+func createUsersUI() fyne.CanvasObject {
 	usersList = widget.NewList(
 		func() int { return len(currentUsers) },
 		func() fyne.CanvasObject {
@@ -274,12 +303,15 @@ func onRefreshHubs(hubs []api.Hub) {
 
 var myWindow fyne.Window
 
-func InitLoginForm(callback func(name, interest string, profileImageReader io.ReadCloser)) {
+func InitLoginForm(callback func(name, interest, contact string, profileImageReader io.ReadCloser)) {
 	nameEntry := widget.NewEntry()
-	nameEntry.SetPlaceHolder("Enter your name")
+	nameEntry.SetPlaceHolder("What is your name?")
 
 	interestsEntry := widget.NewEntry()
-	interestsEntry.SetPlaceHolder("What do you like to do?")
+	interestsEntry.SetPlaceHolder("What interests would you like to share?")
+
+	extraMessageEntry := widget.NewEntry()
+	extraMessageEntry.SetPlaceHolder("For friends to reach you. [optional]")
 
 	var profileImageReader io.ReadCloser
 	profileImageButton := widget.NewButton("Add profile image", func() {
@@ -304,10 +336,11 @@ func InitLoginForm(callback func(name, interest string, profileImageReader io.Re
 			widget.NewFormItem("Name", nameEntry),
 			widget.NewFormItem("Interests", interestsEntry),
 			widget.NewFormItem("Profile Image", profileImageButton),
+			widget.NewFormItem("Contact", extraMessageEntry),
 		},
 		func(ok bool) {
 			if ok {
-				callback(nameEntry.Text, interestsEntry.Text, profileImageReader)
+				callback(nameEntry.Text, interestsEntry.Text, extraMessageEntry.Text, profileImageReader)
 			} else {
 				myWindow.Close()
 			}
@@ -335,7 +368,7 @@ func Init() {
 	})
 
 	tabs := container.NewAppTabs(
-		container.NewTabItem("Peers", createUsersUI(myWindow)),
+		container.NewTabItem("Peers", createUsersUI()),
 		container.NewTabItem("Friends", createFriendsUI()),
 		container.NewTabItem("Hubs", createHubsUI()),
 	)

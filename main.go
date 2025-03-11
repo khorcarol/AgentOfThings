@@ -29,10 +29,11 @@ func main() {
 	frontend.Init()
 
 	if personal.IsNewUser() {
-		frontend.InitLoginForm(func(name, interest string, profileImageReader io.ReadCloser) {
+		frontend.InitLoginForm(func(name, interest, contact string, profileImageReader io.ReadCloser) {
 			log.Println("Ok from inside callback")
 			personal.AddInterest(api.Interest{Category: 4, Description: interest})
 			personal.SetName(name)
+			personal.SetContact(contact)
 			connection_manager := connection.GetCMGR()
 			middle.Start()
 			connection_manager.StartDiscovery()

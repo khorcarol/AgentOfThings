@@ -124,3 +124,7 @@ func SetName(name string) {
 	storage.SaveUserName(name)
 	self.Name = name
 }
+
+func SetContact(contact string) {
+	self.Contact = contact
+}
