@@ -174,6 +174,12 @@ func waitOnDisconnection() {
 		delete(ext_friend_requests, id)
 		frontend_functions.user_refresh(getUserList())
 	}
+	// check if the uuid is a hub
+	_, ok = hubs[id]
+	if ok {
+		delete(hubs, id)
+		frontend_functions.hubs_refresh(getHubList())
+	}
 }
 
 // Adds a new user to users
