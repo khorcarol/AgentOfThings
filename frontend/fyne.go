@@ -119,26 +119,31 @@ func createFriendsUI() fyne.CanvasObject {
 			contactLabel.TextStyle.Italic = true
 			contactLabel.SetText(friend.Contact)
 
+			profileImage := item.Objects[3].(*fyne.Container).Objects[0].(*canvas.Image)
 			if friend.Photo.Img != nil {
-				if image, ok := item.Objects[3].(*fyne.Container).Objects[0].(*canvas.Image); ok {
-					image.Image = friend.Photo.Img
-					image.FillMode = canvas.ImageFillContain
-					image.Refresh()
-				}
+				profileImage.Image = friend.Photo.Img
+				profileImage.FillMode = canvas.ImageFillContain
+				profileImage.Show()
+				profileImage.Refresh()
+			} else {
+				profileImage.Hide()
 			}
 
+			interestsImage := item.Objects[2].(*fyne.Container).Objects[0].(*canvas.Image)
 			if imageUrl := getImage(friend.User.Interests); imageUrl != nil {
 				// interestImage is the next element, wrapped in a padded container; index [3]
-				if image, ok := item.Objects[2].(*fyne.Container).Objects[0].(*canvas.Image); ok {
-					resource, err := fyne.LoadResourceFromURLString(*imageUrl)
-					if err == nil {
-						image.Resource = resource
-					}
-					image.FillMode = canvas.ImageFillContain
-					image.Refresh()
-				}
-			}
+				if resource, err := fyne.LoadResourceFromURLString(*imageUrl); err == nil {
+					interestsImage.Resource = resource
 
+					interestsImage.FillMode = canvas.ImageFillContain
+					interestsImage.Show()
+					interestsImage.Refresh()
+				} else {
+					interestsImage.Hide()
+				}
+			} else {
+				interestsImage.Hide()
+			}
 		},
 	)
 
@@ -192,10 +197,13 @@ func createUsersUI() fyne.CanvasObject {
 			interests_label.Text = "Interests: " + formatInterests(user.Interests)
 			interests_label.Refresh()
 
+			image := container.Objects[2].(*canvas.Image)
 			if imageUrl := getImage(user.Interests); imageUrl != nil {
-				image := container.Objects[2].(*canvas.Image)
+				image.Show()
 				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
 				image.FillMode = canvas.ImageFillContain
+			} else {
+				image.Hide()
 			}
 
 			friendButton := container.Objects[3].(*widget.Button)
