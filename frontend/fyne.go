@@ -287,8 +287,8 @@ func createHubDialog(hub api.Hub, myWindow fyne.Window) {
 			{Text: "Entry", Widget: entry}},
 		OnSubmit: func() { // optional, handle form submission
 			log.Println("Form submitted:", entry.Text)
+			middle.SendHubMessage(hub.HubID, entry.Text)
 			entry.SetText("")
-			// TODO: send message to hub ID
 		},
 	}
 

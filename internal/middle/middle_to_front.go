@@ -2,6 +2,7 @@ package middle
 
 import (
 	"log"
+	"time"
 
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection"
@@ -78,4 +79,18 @@ func SendFriendRequest(userID api.ID, accept bool) {
 	}
 
 	frontend_functions.user_refresh(getUserList())
+}
+
+func SendHubMessage(hubID api.ID, text string) {
+
+	_, ok := hubs[hubID]
+	if !ok {
+		log.Printf("Error: Hub not found in hub list: %s", hubID)
+	}
+
+	message := api.Message{Author: personal.GetSelf().User.UserID, Contents: text, Timestamp: time.Now()}
+
+	cmgr := connection.GetCMGR()
+	cmgr.SendMessage(hubID, message)
+
 }
