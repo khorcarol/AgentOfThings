@@ -55,16 +55,19 @@ func (cmgr *ConnectionManager) receiveNewMessages(hub *api.Hub, peerID peer.ID) 
 	go cmgr.BroadcastMessages(hub.Messages)
 }
 
-func InitConnectionManager() (*ConnectionManager, error) {
-	cmgr := ConnectionManager{peersMutex: sync.Mutex{}}
+func InitConnectionManager(hub api.Hub) (*ConnectionManager, error) {
 	_self, err := libp2p.New()
 	if err != nil {
 		return nil, err
 	}
-	cmgr.host = _self
-	cmgr.connectedPeers = make(map[peer.ID]struct{})
-	cmgr.NewMessages = make(chan api.Message, 10)
-	cmgr.peerAddrChan = make(chan peer.AddrInfo, 10)
+	cmgr := ConnectionManager{
+		peersMutex:     sync.Mutex{},
+		host:           _self,
+		connectedPeers: make(map[peer.ID]struct{}),
+		NewMessages:    make(chan api.Message, 10),
+		peerAddrChan:   make(chan peer.AddrInfo, 10),
+		self:           hub,
+	}
 
 	// register disconnect protocol
 	cmgr.host.Network().Notify(&network.NotifyBundle{
