@@ -182,10 +182,10 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 			rejectButton.Hide()
 
 			if middle.HasIncomingFriendRequest(user.UserID) {
-				friendButton.SetText("Accept friend request")
+				friendButton.SetText("Accept Friend Request")
 				rejectButton.Show()
 			} else if middle.HasOutgoingFriendRequest(user.UserID) {
-				friendButton.SetText("Friend request sent")
+				friendButton.SetText("Friend Request Sent")
 				friendButton.Disable()
 			}
 		},
