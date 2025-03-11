@@ -31,6 +31,7 @@ func StoreMessage(message api.Message) error {
 	if path_err != nil {
 		return path_err
 	}
+
 	path := filepath.Join(sdir, message.Timestamp.String(), message.Author.String())
 
 	write_err := os.WriteFile(path, data, 0644)
