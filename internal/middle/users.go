@@ -165,14 +165,14 @@ func waitOnDisconnection() {
 	_, ok = friend_requests[id]
 	if ok {
 		delete(friend_requests, id)
-		frontend_functions.fr_refresh(getFriendRequests())
+		frontend_functions.user_refresh(getUserList())
 		return
 	}
 	// check if the uuid is an incoming friend request
 	_, ok = ext_friend_requests[id]
 	if ok {
 		delete(ext_friend_requests, id)
-		frontend_functions.fr_refresh(getFriendRequests())
+		frontend_functions.user_refresh(getUserList())
 	}
 }
 

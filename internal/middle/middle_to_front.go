@@ -12,7 +12,6 @@ import (
 type FrontEndFunctions struct {
 	friend_refresh func(friends []api.Friend)
 	user_refresh   func(users []api.User)
-	fr_refresh     func(in []api.User, out []api.User)
 	hubs_refresh   func(hubs []api.Hub)
 }
 
