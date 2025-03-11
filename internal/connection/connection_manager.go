@@ -197,6 +197,7 @@ func (cmgr *ConnectionManager) identifyPeer(peerAddr peer.AddrInfo, wg *sync.Wai
 	if _, ok := cmgr.connectedPeers[peerAddr.ID]; !ok {
 		return nil
 	}
+	log.Printf("Identifying peer %+v\n", peerAddr.ID)
 	// carry out handshake
 	isUser, err := identify.Identify(cmgr.host, context.Background(), peerAddr.ID)
 	if err != nil {
@@ -205,10 +206,12 @@ func (cmgr *ConnectionManager) identifyPeer(peerAddr peer.AddrInfo, wg *sync.Wai
 
 	if isUser {
 		// it's a user!
+		log.Printf("Peer %+v is a user\n", peerAddr.ID)
 		go cmgr.peerToUserHandshake(peerAddr, wg)
 	} else {
 		// it's a hub!
 		// do nothing i guess? we wait for messages from the hub
+		log.Printf("Peer %+v is a hub\n", peerAddr.ID)
 		cmgr.connectedPeers[peerAddr.ID] = struct{}{}
 		wg.Done()
 	}
@@ -217,6 +220,7 @@ func (cmgr *ConnectionManager) identifyPeer(peerAddr peer.AddrInfo, wg *sync.Wai
 }
 
 func (cmgr *ConnectionManager) receiveMessages(hub *api.Hub, id peer.ID) {
+	log.Printf("Received %v Messages from Hub %+v", len(hub.Messages), id)
 	cmgr.uuids.Insert(hub.HubID.Address, id)
 	cmgr.NewMessages <- *hub
 }
@@ -225,10 +229,10 @@ func (cmgr *ConnectionManager) StartDiscovery() {
 	go func() {
 		var wg sync.WaitGroup
 		for peerAddr := range cmgr.peerAddrChan {
-			if shouldHandshake(peerAddr.ID, cmgr.host.ID()) {
-				wg.Add(1)
-				go cmgr.connectToPeer(peerAddr, &wg)
-			}
+			// if shouldHandshake(peerAddr.ID, cmgr.host.ID()) {
+			wg.Add(1)
+			go cmgr.connectToPeer(peerAddr, &wg)
+			// }
 		}
 	}()
 }

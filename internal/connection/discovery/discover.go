@@ -2,6 +2,7 @@ package discovery
 
 import (
 	"errors"
+	"log"
 
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/peer"
@@ -13,6 +14,7 @@ type discoveryNotifee struct {
 }
 
 func (n *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
+	log.Printf("Found new peer! %+v\n", pi.ID)
 	n.PeerChan <- pi
 }
 
