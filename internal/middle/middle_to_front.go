@@ -32,16 +32,6 @@ func Seen(userID api.ID) {
 	setUserSeen(userID, true)
 }
 
-func GetFriends() []api.Friend {
-	ret := []api.Friend{}
-
-	for _, v := range friends {
-		ret = append(ret, v)
-	}
-
-	return ret
-}
-
 func HasOutgoingFriendRequest(userID api.ID) bool {
 	_, exists := friend_requests[userID]
 	return exists

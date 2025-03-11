@@ -11,9 +11,10 @@ import (
 )
 
 type FriendJson struct {
-	User  api.User
-	Photo string
-	Name  string
+	User         api.User
+	Photo        string
+	Name         string
+	ExtraMessage string
 }
 
 func friendToFriendJson(friend api.Friend) FriendJson {
@@ -47,7 +48,7 @@ func friendToFriendJson(friend api.Friend) FriendJson {
 		}
 	}
 
-	return FriendJson{User: friend.User, Photo: fpath, Name: friend.Name}
+	return FriendJson{User: friend.User, Photo: fpath, Name: friend.Name, ExtraMessage: friend.Contact}
 }
 
 func friendJsonToFriend(fj FriendJson) api.Friend {
@@ -64,7 +65,7 @@ func friendJsonToFriend(fj FriendJson) api.Friend {
 		}
 	}
 
-	return api.Friend{User: fj.User, Photo: api.ImageData{Img: img}, Name: fj.Name}
+	return api.Friend{User: fj.User, Photo: api.ImageData{Img: img}, Name: fj.Name, Contact: fj.ExtraMessage}
 }
 
 func openImage(path string) (image.Image, error) {
