@@ -9,7 +9,6 @@ import (
 	"image/color"
 	"io"
 	"log"
-	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -260,7 +259,7 @@ func createHubsUI() fyne.CanvasObject {
 			container := o.(*fyne.Container)
 
 			nameLabel := container.Objects[0].(*widget.Label)
-			nameLabel.SetText("Hub " + strconv.Itoa(i+1))
+			nameLabel.SetText(currentHubs[i].HubName)
 
 			button := container.Objects[2].(*widget.Button)
 			button.OnTapped = func() {
@@ -273,7 +272,6 @@ func createHubsUI() fyne.CanvasObject {
 }
 
 func createHubDialog(hub api.Hub, myWindow fyne.Window) {
-
 	messages := widget.NewList(
 		func() int { return len(hub.Messages) },
 		func() fyne.CanvasObject {
@@ -282,13 +280,11 @@ func createHubDialog(hub api.Hub, myWindow fyne.Window) {
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-
 			message := hub.Messages[i]
 			container := o.(*fyne.Container)
 
 			nameLabel := container.Objects[0].(*widget.Label)
 			nameLabel.SetText(message.Contents)
-
 		},
 	)
 
@@ -389,14 +385,14 @@ func Init() {
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	myWindow.SetContent(tabs)
-
 }
 
 func Run() {
 	onRefreshHubs([]api.Hub{
-		{HubID: api.ID{},
-			Messages: []api.Message{{Author: api.ID{}, Contents: "Hello"}}},
+		{
+			HubID:    api.ID{},
+			Messages: []api.Message{{Author: api.ID{}, Contents: "Hello"}},
+		},
 	})
 	myWindow.ShowAndRun()
-
 }
