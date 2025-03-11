@@ -161,7 +161,7 @@ func (cmgr *ConnectionManager) connectToPeer(peerAddr peer.AddrInfo, wg *sync.Wa
 	cmgr.peersMutex.Unlock()
 	// open connection to peer
 	if err := cmgr.host.Connect(context.Background(), peerAddr); err != nil {
-		log.Fatal("Failed to connect to new peer", err)
+		log.Print("Failed to connect to new peer", err)
 	}
 
 	// handshake to promote peer to user
