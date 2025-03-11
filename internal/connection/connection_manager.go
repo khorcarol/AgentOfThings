@@ -229,10 +229,10 @@ func (cmgr *ConnectionManager) StartDiscovery() {
 	go func() {
 		var wg sync.WaitGroup
 		for peerAddr := range cmgr.peerAddrChan {
-			if shouldHandshake(peerAddr.ID, cmgr.host.ID()) {
-				wg.Add(1)
-				go cmgr.connectToPeer(peerAddr, &wg)
-			}
+			// if shouldHandshake(peerAddr.ID, cmgr.host.ID()) {
+			wg.Add(1)
+			go cmgr.connectToPeer(peerAddr, &wg)
+			// }
 		}
 	}()
 }
