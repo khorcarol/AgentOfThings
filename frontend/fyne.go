@@ -187,6 +187,9 @@ func createUsersUI(myWindow fyne.Window) fyne.CanvasObject {
 			} else if middle.HasOutgoingFriendRequest(user.UserID) {
 				friendButton.SetText("Friend Request Sent")
 				friendButton.Disable()
+			} else {
+				friendButton.SetText("Send Friend Request")
+				friendButton.Enable()
 			}
 		},
 	)
