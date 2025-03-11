@@ -21,6 +21,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
+	"github.com/khorcarol/AgentOfThings/internal/personal"
 )
 
 // Custom colors
@@ -193,7 +194,7 @@ func createUsersUI() fyne.CanvasObject {
 			nameLabel.TextSize = 16
 
 			interests_label := container.Objects[1].(*widget.Label)
-			interests_label.Text = "Interests: " + formatInterests(user.Interests)
+			interests_label.Text = "Interests: \n" + formatInterests(user.Interests)
 			interests_label.Refresh()
 
 			image := container.Objects[2].(*canvas.Image)
@@ -290,17 +291,24 @@ func createHubDialog(hub api.Hub, myWindow fyne.Window) {
 
 	entry := widget.NewEntry()
 	form := &widget.Form{
-		Items: []*widget.FormItem{ // we can specify items in the constructor
+		Items: []*widget.FormItem{
 			{Text: "Entry", Widget: entry}},
-		OnSubmit: func() { // optional, handle form submission
-			log.Println("Form submitted:", entry.Text)
-			middle.SendHubMessage(hub.HubID, entry.Text)
-			entry.SetText("")
-		},
 	}
+	form.Refresh()
 
-	dialog := dialog.NewCustom("Hub", "Close", container.NewVBox(messages, form), myWindow)
-	dialog.Resize(fyne.NewSize(500, 200))
+	dialog := dialog.NewCustomWithoutButtons("Hub", container.NewBorder(nil, form, nil, nil, messages), myWindow)
+	close := widget.NewButton("Close", func() {
+		dialog.Hide()
+	})
+	send := widget.NewButton("Send", func() {
+		log.Println("Form submitted:", entry.Text)
+		middle.SendHubMessage(hub.HubID, entry.Text)
+		hub.Messages = append(hub.Messages, api.Message{Author: personal.GetSelf().User.UserID, Contents: entry.Text})
+		messages.Refresh()
+		entry.SetText("")
+	})
+	dialog.SetButtons([]fyne.CanvasObject{container.NewBorder(nil, nil, close, send)})
+	dialog.Resize(fyne.NewSize(500, 350))
 	dialog.Show()
 }
 
