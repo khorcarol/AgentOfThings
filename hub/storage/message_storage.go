@@ -15,13 +15,12 @@ func getStorageDir() (string, error) {
 	const storagePath = "hub/messages"
 	cdir, err := storage.GetCacheDir()
 	if err != nil {
-		return "", fmt.Errorf("Error getting cache dir: %s", err)
+		return "", fmt.Errorf("error getting cache dir: %s", err)
 	}
 	return filepath.Join(cdir, storagePath), nil
 }
 
 func StoreMessage(message api.Message) error {
-
 	data, data_err := json.MarshalIndent(message, "", "  ")
 	if data_err != nil {
 		return data_err
@@ -35,15 +34,13 @@ func StoreMessage(message api.Message) error {
 
 	write_err := os.WriteFile(path, data, 0644)
 	if write_err != nil {
-		return fmt.Errorf("Error writing to file while storing message: %s", write_err)
+		return fmt.Errorf("error writing to file while storing message: %s", write_err)
 	}
 
 	return nil
-
 }
 
 func ReadMessages() ([]api.Message, error) {
-
 	ls := []api.Message{}
 
 	sdir, err := getStorageDir()
@@ -71,5 +68,4 @@ func ReadMessages() ([]api.Message, error) {
 	})
 
 	return ls, nil
-
 }
