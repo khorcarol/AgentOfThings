@@ -400,6 +400,6 @@ func Init() {
 }
 
 func Run() {
-	
+
 	myWindow.ShowAndRun()
 }
