@@ -32,8 +32,7 @@ func main() {
 		frontend.InitLoginForm(func(name, interest, contact string, profileImageReader io.ReadCloser) {
 			log.Println("Ok from inside callback")
 			personal.AddInterest(api.Interest{Category: 4, Description: interest})
-			personal.SetName(name)
-			personal.SetContact(contact)
+			personal.SetPersonal(name, contact)
 			connection_manager := connection.GetCMGR()
 			middle.Start()
 			connection_manager.StartDiscovery()
