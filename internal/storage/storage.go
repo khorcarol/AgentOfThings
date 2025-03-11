@@ -14,28 +14,8 @@ import (
 const (
 	appDirName       = "AgentOfThings"
 	friendsFileName  = "friends.json"
-	userNameFileName = "name.txt"
+	personalFileName = "personal.json"
 )
-
-// dirProvider interface for getting system directories
-type dirProvider interface {
-	GetConfigDir() (string, error)
-	GetCacheDir() (string, error)
-}
-
-// defaultDirProvider implements dirProvider
-type defaultDirProvider struct{}
-
-func (p defaultDirProvider) GetConfigDir() (string, error) {
-	return os.UserConfigDir()
-}
-
-func (p defaultDirProvider) GetCacheDir() (string, error) {
-	return os.UserCacheDir()
-}
-
-// concrete implementation of dirProvider
-var provider dirProvider = defaultDirProvider{}
 
 var profileSubdirectory *string
 
@@ -45,7 +25,7 @@ func SetProfileSubdirectory(subdir string) {
 
 // returns directory where data should be stored
 func GetStorageDir() (string, error) {
-	configDir, err := provider.GetConfigDir()
+	configDir, err := os.UserConfigDir()
 	if err != nil {
 		return "", fmt.Errorf("failed to get config directory: %w", err)
 	}
@@ -63,7 +43,7 @@ func GetStorageDir() (string, error) {
 }
 
 func GetCacheDir() (string, error) {
-	configDir, err := provider.GetCacheDir()
+	configDir, err := os.UserCacheDir()
 	if err != nil {
 		return "", fmt.Errorf("failed to get cache directory: %w", err)
 	}
@@ -199,31 +179,40 @@ func CheckFriend(id api.ID) (option.Option[api.Friend], error) {
 	}
 }
 
-func LoadUserName() (string, error) {
-	storageDir, err := GetStorageDir()
-	if err != nil {
-		return "", fmt.Errorf("failed to get storage directory: %w", err)
-	}
-
-	filePath := filepath.Join(storageDir, userNameFileName)
-	var name []byte
-	if name, err = os.ReadFile(filePath); err != nil {
-		return "", fmt.Errorf("failed to read user name from file: %w", err)
-	}
-
-	return (string)(name), nil
+type PersonalJson struct {
+	Name    string `json:"name"`
+	Contact string `json:"contact"`
 }
 
-func SaveUserName(name string) error {
-	storageDir, err := GetStorageDir()
+func LoadPersonal() (PersonalJson, error) {
+	dir, err := GetStorageDir()
 	if err != nil {
-		return fmt.Errorf("failed to get storage directory: %w", err)
+		return PersonalJson{}, err
 	}
-
-	filePath := filepath.Join(storageDir, userNameFileName)
-	if err := os.WriteFile(filePath, ([]byte)(name), 0644); err != nil {
-		return fmt.Errorf("failed to write user name to file: %w", err)
+	filePath := filepath.Join(dir, personalFileName)
+	data, err := os.ReadFile(filePath)
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return PersonalJson{Name: "John Doe", Contact: ""}, nil
+		}
+		return PersonalJson{}, err
 	}
+	var pj PersonalJson
+	if err = json.Unmarshal(data, &pj); err != nil {
+		return PersonalJson{}, err
+	}
+	return pj, nil
+}
 
-	return nil
+// SavePersonal writes personal details to disk.
+func SavePersonal(pj PersonalJson) error {
+	dir, err := GetStorageDir()
+	if err != nil {
+		return err
+	}
+	data, err := json.MarshalIndent(pj, "", "  ")
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(filepath.Join(dir, personalFileName), data, 0644)
 }

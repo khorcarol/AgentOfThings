@@ -9,7 +9,6 @@ import (
 	"image/color"
 	"io"
 	"log"
-	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -22,6 +21,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/middle"
+	"github.com/khorcarol/AgentOfThings/internal/personal"
 )
 
 // Custom colors
@@ -86,7 +86,8 @@ func createFriendsUI() fyne.CanvasObject {
 
 			// Build a VBox for text: Name, Contact and Interests.
 			leftBox := container.NewVBox(
-				widget.NewLabel("Name"),
+
+				canvas.NewText("  Name", color.Black),
 				widget.NewLabel("Interests:"),
 				widget.NewLabel("Contact:"), // New field for contact info.
 			)
@@ -107,41 +108,46 @@ func createFriendsUI() fyne.CanvasObject {
 
 			leftBox := item.Objects[0].(*fyne.Container)
 			// leftBox.Objects[0] = Name, [1] = Contact, [2] = Interests.
-			nameLabel := leftBox.Objects[0].(*widget.Label)
-			nameLabel.TextStyle.Bold = true
-			nameLabel.SetText(friend.Name)
+			nameLabel := leftBox.Objects[0].(*canvas.Text)
+			nameLabel.TextSize = 16
+			nameLabel.Text = "  " + friend.Name
 
 			interestsLabel := leftBox.Objects[1].(*widget.Label)
 			interestsLabel.SetText(formatInterests(friend.User.Interests))
 
 			contactLabel := leftBox.Objects[2].(*widget.Label)
-			nameLabel.TextStyle.Italic = true
+			contactLabel.TextStyle.Italic = true
 			contactLabel.SetText(friend.Contact)
 
+			profileImage := item.Objects[3].(*fyne.Container).Objects[0].(*canvas.Image)
 			if friend.Photo.Img != nil {
-				if image, ok := item.Objects[3].(*fyne.Container).Objects[0].(*canvas.Image); ok {
-					image.Image = friend.Photo.Img
-					image.FillMode = canvas.ImageFillContain
-					image.Refresh()
-				}
+				profileImage.Image = friend.Photo.Img
+				profileImage.FillMode = canvas.ImageFillContain
+				profileImage.Show()
+				profileImage.Refresh()
+			} else {
+				profileImage.Hide()
 			}
 
+			interestsImage := item.Objects[2].(*fyne.Container).Objects[0].(*canvas.Image)
 			if imageUrl := getImage(friend.User.Interests); imageUrl != nil {
 				// interestImage is the next element, wrapped in a padded container; index [3]
-				if image, ok := item.Objects[2].(*fyne.Container).Objects[0].(*canvas.Image); ok {
-					resource, err := fyne.LoadResourceFromURLString(*imageUrl)
-					if err == nil {
-						image.Resource = resource
-					}
-					image.FillMode = canvas.ImageFillContain
-					image.Refresh()
-				}
-			}
+				if resource, err := fyne.LoadResourceFromURLString(*imageUrl); err == nil {
+					interestsImage.Resource = resource
 
+					interestsImage.FillMode = canvas.ImageFillContain
+					interestsImage.Show()
+					interestsImage.Refresh()
+				} else {
+					interestsImage.Hide()
+				}
+			} else {
+				interestsImage.Hide()
+			}
 		},
 	)
 
-	return container.NewBorder(nil, nil, nil, nil, friendsList)
+	return container.NewPadded(friendsList)
 }
 
 func onRefreshFriends(friends []api.Friend) {
@@ -173,8 +179,7 @@ func createUsersUI() fyne.CanvasObject {
 			image := &canvas.Image{}
 			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
 			return container.NewVBox(
-				widget.NewLabel("Anonymous User"),
-				layout.NewSpacer(),
+				canvas.NewText("  Anonymous User", color.Black),
 				widget.NewLabel("Interests: "),
 				image,
 				widget.NewButton("Send Friend Request", nil),
@@ -185,30 +190,37 @@ func createUsersUI() fyne.CanvasObject {
 			user := currentUsers[i]
 			container := o.(*fyne.Container)
 
-			interests_label := container.Objects[2].(*widget.Label)
-			interests_label.Text = "Interests: " + formatInterests(user.Interests)
+			nameLabel := container.Objects[0].(*canvas.Text)
+			nameLabel.TextSize = 16
+
+			interests_label := container.Objects[1].(*widget.Label)
+			interests_label.Text = "Interests: \n" + formatInterests(user.Interests)
 			interests_label.Refresh()
 
+			image := container.Objects[2].(*canvas.Image)
 			if imageUrl := getImage(user.Interests); imageUrl != nil {
-				image := container.Objects[3].(*canvas.Image)
+				image.Show()
 				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
 				image.FillMode = canvas.ImageFillContain
+			} else {
+				image.Hide()
 			}
 
-			friendButton := container.Objects[4].(*widget.Button)
+			friendButton := container.Objects[3].(*widget.Button)
 
 			friendButton.OnTapped = func() {
 				middle.Seen(user.UserID)
 				middle.SendFriendRequest(user.UserID, true)
 			}
 
-			rejectButton := container.Objects[5].(*widget.Button)
+			rejectButton := container.Objects[4].(*widget.Button)
 
 			rejectButton.OnTapped = func() {
 				middle.Seen(user.UserID)
 				middle.SendFriendRequest(user.UserID, false)
 			}
 			rejectButton.Hide()
+			friendButton.Enable()
 
 			if middle.HasIncomingFriendRequest(user.UserID) {
 				friendButton.SetText("Accept Friend Request")
@@ -218,11 +230,10 @@ func createUsersUI() fyne.CanvasObject {
 				friendButton.Disable()
 			} else {
 				friendButton.SetText("Send Friend Request")
-				friendButton.Enable()
 			}
 		},
 	)
-	return container.NewBorder(nil, nil, nil, nil, usersList)
+	return container.NewPadded(usersList)
 }
 
 //	func showPopup(win fyne.Window) {
@@ -249,7 +260,7 @@ func createHubsUI() fyne.CanvasObject {
 			container := o.(*fyne.Container)
 
 			nameLabel := container.Objects[0].(*widget.Label)
-			nameLabel.SetText("Hub " + strconv.Itoa(i+1))
+			nameLabel.SetText(currentHubs[i].HubName)
 
 			button := container.Objects[2].(*widget.Button)
 			button.OnTapped = func() {
@@ -262,7 +273,6 @@ func createHubsUI() fyne.CanvasObject {
 }
 
 func createHubDialog(hub api.Hub, myWindow fyne.Window) {
-
 	messages := widget.NewList(
 		func() int { return len(hub.Messages) },
 		func() fyne.CanvasObject {
@@ -271,29 +281,34 @@ func createHubDialog(hub api.Hub, myWindow fyne.Window) {
 			)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-
 			message := hub.Messages[i]
 			container := o.(*fyne.Container)
 
 			nameLabel := container.Objects[0].(*widget.Label)
 			nameLabel.SetText(message.Contents)
-
 		},
 	)
 
 	entry := widget.NewEntry()
 	form := &widget.Form{
-		Items: []*widget.FormItem{ // we can specify items in the constructor
+		Items: []*widget.FormItem{
 			{Text: "Entry", Widget: entry}},
-		OnSubmit: func() { // optional, handle form submission
-			log.Println("Form submitted:", entry.Text)
-			middle.SendHubMessage(hub.HubID, entry.Text)
-			entry.SetText("")
-		},
 	}
+	form.Refresh()
 
-	dialog := dialog.NewCustom("Hub", "Close", container.NewVBox(messages, form), myWindow)
-	dialog.Resize(fyne.NewSize(500, 200))
+	dialog := dialog.NewCustomWithoutButtons("Hub", container.NewBorder(nil, form, nil, nil, messages), myWindow)
+	close := widget.NewButton("Close", func() {
+		dialog.Hide()
+	})
+	send := widget.NewButton("Send", func() {
+		log.Println("Form submitted:", entry.Text)
+		middle.SendHubMessage(hub.HubID, entry.Text)
+		hub.Messages = append(hub.Messages, api.Message{Author: personal.GetSelf().User.UserID, Contents: entry.Text})
+		messages.Refresh()
+		entry.SetText("")
+	})
+	dialog.SetButtons([]fyne.CanvasObject{container.NewBorder(nil, nil, close, send)})
+	dialog.Resize(fyne.NewSize(500, 350))
 	dialog.Show()
 }
 
@@ -378,14 +393,14 @@ func Init() {
 	tabs.SetTabLocation(container.TabLocationTop)
 
 	myWindow.SetContent(tabs)
-
 }
 
 func Run() {
 	onRefreshHubs([]api.Hub{
-		{HubID: api.ID{},
-			Messages: []api.Message{{Author: api.ID{}, Contents: "Hello"}}},
+		{
+			HubID:    api.ID{},
+			Messages: []api.Message{{Author: api.ID{}, Contents: "Hello"}},
+		},
 	})
 	myWindow.ShowAndRun()
-
 }

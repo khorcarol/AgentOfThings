@@ -2,8 +2,10 @@ package connection
 
 import (
 	"context"
+	"log"
 	"sync"
 
+	hub_storage "github.com/khorcarol/AgentOfThings/hub/storage"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection/discovery"
 	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/handshake/identify"
@@ -44,27 +46,39 @@ func (cmgr *ConnectionManager) peerConnectWrapper() func(network.Network, networ
 }
 
 func (cmgr *ConnectionManager) handleNewUser(peerID peer.ID) {
-	// TODO: send them all the stored messages
+	log.Printf("Sending all old messages to new peer %+v\n", peerID)
+	// send them all the stored messages
+	msgs, _ := hub_storage.ReadMessages()
+	outgoing := api.Hub{
+		HubName:  cmgr.self.HubName,
+		HubID:    cmgr.self.HubID,
+		Messages: msgs,
+	}
+	go send_message.SendMessages(cmgr.host,
+		context.Background(), peerID, outgoing)
 }
 
 func (cmgr *ConnectionManager) receiveNewMessages(hub *api.Hub, peerID peer.ID) {
+	log.Printf("Receiving new message from peer %+v\n", peerID)
 	for _, message := range hub.Messages {
-		// TODO: Get rid of the channel and just store the messages directly
-		cmgr.NewMessages <- message
+		hub_storage.StoreMessage(message)
 	}
 	go cmgr.BroadcastMessages(hub.Messages)
 }
 
-func InitConnectionManager() (*ConnectionManager, error) {
-	cmgr := ConnectionManager{peersMutex: sync.Mutex{}}
+func InitConnectionManager(hub api.Hub) (*ConnectionManager, error) {
 	_self, err := libp2p.New()
 	if err != nil {
 		return nil, err
 	}
-	cmgr.host = _self
-	cmgr.connectedPeers = make(map[peer.ID]struct{})
-	cmgr.NewMessages = make(chan api.Message, 10)
-	cmgr.peerAddrChan = make(chan peer.AddrInfo, 10)
+	cmgr := ConnectionManager{
+		peersMutex:     sync.Mutex{},
+		host:           _self,
+		connectedPeers: make(map[peer.ID]struct{}),
+		NewMessages:    make(chan api.Message, 10),
+		peerAddrChan:   make(chan peer.AddrInfo, 10),
+		self:           hub,
+	}
 
 	// register disconnect protocol
 	cmgr.host.Network().Notify(&network.NotifyBundle{
@@ -75,6 +89,7 @@ func InitConnectionManager() (*ConnectionManager, error) {
 	// register stream handlers for protocols
 	cmgr.host.SetStreamHandler(protocol.ID(identify.HandshakeProtocolID),
 		func(stream network.Stream) {
+			log.Printf("Responding to identify from peer %+v\n", stream.Conn().RemotePeer())
 			identify.IdentifyHandler(stream, false, cmgr.handleNewUser)
 		})
 

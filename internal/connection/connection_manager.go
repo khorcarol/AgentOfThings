@@ -8,8 +8,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/khorcarol/AgentOfThings/internal/api"
 	"github.com/khorcarol/AgentOfThings/internal/connection/discovery"
+	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/handshake/identify"
 	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/handshake/peer_to_user"
 	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/handshake/user_to_friend"
+	"github.com/khorcarol/AgentOfThings/internal/connection/protocol/send_message"
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p/core/host"
 	"github.com/libp2p/go-libp2p/core/network"
@@ -72,6 +74,7 @@ func initConnectionManager() (*ConnectionManager, error) {
 	cmgr.IncomingUsers = make(chan api.User, 10)
 	cmgr.IncomingFriendRequest = make(chan api.FriendRequest, 10)
 	cmgr.PeerDisconnections = make(chan uuid.UUID, 10)
+	cmgr.NewMessages = make(chan api.Hub, 10)
 
 	// register disconnect protocol
 	cmgr.host.Network().Notify(&network.NotifyBundle{
@@ -90,6 +93,14 @@ func initConnectionManager() (*ConnectionManager, error) {
 				// Pass friend data to middle.
 				cmgr.IncomingFriendRequest <- *f
 			})
+		})
+	cmgr.host.SetStreamHandler(protocol.ID(identify.HandshakeProtocolID),
+		func(stream network.Stream) {
+			identify.IdentifyHandler(stream, true, func(i peer.ID) {})
+		})
+	cmgr.host.SetStreamHandler(protocol.ID(send_message.ProtocolID),
+		func(stream network.Stream) {
+			send_message.SendMessageHandler(stream, cmgr.receiveMessages)
 		})
 
 	// initialise peer discovery via mdns
@@ -123,7 +134,15 @@ func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.FriendR
 }
 
 func (cmgr *ConnectionManager) SendMessage(HubID api.ID, message api.Message) error {
-	return nil
+	peerID, ok := cmgr.uuids.Get(HubID.Address)
+	if !ok {
+		return nil
+	}
+	toSend := api.Hub{
+		Messages: []api.Message{message},
+	}
+
+	return send_message.SendMessages(cmgr.host, context.Background(), peerID, toSend)
 }
 
 func (cmgr *ConnectionManager) waitOnPeer(wg *sync.WaitGroup) {
@@ -171,17 +190,49 @@ func (cmgr *ConnectionManager) connectToPeer(peerAddr peer.AddrInfo, wg *sync.Wa
 	}
 
 	// handshake to promote peer to user
-	go cmgr.peerToUserHandshake(peerAddr, wg)
+	go cmgr.identifyPeer(peerAddr, wg)
+}
+
+func (cmgr *ConnectionManager) identifyPeer(peerAddr peer.AddrInfo, wg *sync.WaitGroup) error {
+	if _, ok := cmgr.connectedPeers[peerAddr.ID]; !ok {
+		return nil
+	}
+	log.Printf("Identifying peer %+v\n", peerAddr.ID)
+	// carry out handshake
+	isUser, err := identify.Identify(cmgr.host, context.Background(), peerAddr.ID)
+	if err != nil {
+		return err
+	}
+
+	if isUser {
+		// it's a user!
+		log.Printf("Peer %+v is a user\n", peerAddr.ID)
+		go cmgr.peerToUserHandshake(peerAddr, wg)
+	} else {
+		// it's a hub!
+		// do nothing i guess? we wait for messages from the hub
+		log.Printf("Peer %+v is a hub\n", peerAddr.ID)
+		cmgr.connectedPeers[peerAddr.ID] = struct{}{}
+		wg.Done()
+	}
+
+	return nil
+}
+
+func (cmgr *ConnectionManager) receiveMessages(hub *api.Hub, id peer.ID) {
+	log.Printf("Received %v Messages from Hub %+v", len(hub.Messages), id)
+	cmgr.uuids.Insert(hub.HubID.Address, id)
+	cmgr.NewMessages <- *hub
 }
 
 func (cmgr *ConnectionManager) StartDiscovery() {
 	go func() {
 		var wg sync.WaitGroup
 		for peerAddr := range cmgr.peerAddrChan {
-			if shouldHandshake(peerAddr.ID, cmgr.host.ID()) {
-				wg.Add(1)
-				go cmgr.connectToPeer(peerAddr, &wg)
-			}
+			// if shouldHandshake(peerAddr.ID, cmgr.host.ID()) {
+			wg.Add(1)
+			go cmgr.connectToPeer(peerAddr, &wg)
+			// }
 		}
 	}()
 }

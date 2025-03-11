@@ -24,7 +24,17 @@ func Init() {
 	interests := sources.GetInterests()
 	us := api.User{UserID: id, Interests: interests, Seen: false}
 
-	self = api.Friend{User: us, Photo: api.ImageData{Img: GetPicture()}, Name: getName()}
+	personal, err := storage.LoadPersonal()
+	if err != nil {
+		// If unable to read, use default values.
+		personal = storage.PersonalJson{Name: "John Doe", Contact: ""}
+	}
+	self = api.Friend{
+		User:    us,
+		Photo:   api.ImageData{Img: GetPicture()},
+		Name:    personal.Name,
+		Contact: personal.Contact,
+	}
 }
 
 // Returns self, the Friend struct containing our personal data
@@ -102,16 +112,6 @@ func SetPicture(picture image.Image) error {
 	return nil
 }
 
-func getName() string {
-	name, err := storage.LoadUserName()
-
-	if err != nil {
-		name = "John Doe"
-	}
-
-	return name
-}
-
 func AddInterest(interest api.Interest) {
 	if err := sources.AddManualInterest(interest); err != nil {
 		log.Printf("Failed to add interest: %v\n", err)
@@ -120,11 +120,19 @@ func AddInterest(interest api.Interest) {
 	self.User.Interests = append(self.User.Interests, interest)
 }
 
-func SetName(name string) {
-	storage.SaveUserName(name)
+func SetPersonal(name, contact string) {
+	if name == "" {
+		log.Print("Name cannot be empty, using default name instead.")
+		name = "Silly Bryan"
+	}
+	pj := storage.PersonalJson{
+		Name:    name,
+		Contact: contact,
+	}
+	if err := storage.SavePersonal(pj); err != nil {
+		log.Printf("Failed to save personal info: %v\n", err)
+		return
+	}
 	self.Name = name
-}
-
-func SetContact(contact string) {
 	self.Contact = contact
 }
