@@ -115,7 +115,7 @@ func createFriendsUI() fyne.CanvasObject {
 			interestsLabel.SetText(formatInterests(friend.User.Interests))
 
 			contactLabel := leftBox.Objects[2].(*widget.Label)
-			nameLabel.TextStyle.Italic = true
+			contactLabel.TextStyle.Italic = true
 			contactLabel.SetText(friend.Contact)
 
 			if friend.Photo.Img != nil {
