@@ -21,5 +21,11 @@ func Start() {
 		}
 	}()
 
+	go func() {
+		for {
+			updateMessages()
+		}
+	}()
+
 	log.Println("Middle layer processing started")
 }
