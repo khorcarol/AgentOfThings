@@ -22,6 +22,7 @@ type ConnectionManager struct {
 	host           host.Host
 	peersMutex     sync.Mutex
 	connectedPeers map[peer.ID]struct{}
+	self           api.Hub
 
 	NewMessages chan api.Message
 }
@@ -46,12 +47,12 @@ func (cmgr *ConnectionManager) handleNewUser(peerID peer.ID) {
 	// TODO: send them all the stored messages
 }
 
-func (cmgr *ConnectionManager) receiveNewMessages(messages *[]api.Message, peerID peer.ID) {
-	for _, message := range *messages {
+func (cmgr *ConnectionManager) receiveNewMessages(hub *api.Hub, peerID peer.ID) {
+	for _, message := range hub.Messages {
 		// TODO: Get rid of the channel and just store the messages directly
 		cmgr.NewMessages <- message
 	}
-	go cmgr.BroadcastMessages(*messages)
+	go cmgr.BroadcastMessages(hub.Messages)
 }
 
 func InitConnectionManager() (*ConnectionManager, error) {
@@ -99,8 +100,13 @@ func InitConnectionManager() (*ConnectionManager, error) {
 }
 
 func (cmgr *ConnectionManager) BroadcastMessages(msgs []api.Message) {
+	outgoing := api.Hub{
+		HubName:  cmgr.self.HubName,
+		HubID:    cmgr.self.HubID,
+		Messages: msgs,
+	}
 	for peerID := range cmgr.connectedPeers {
 		go send_message.SendMessages(cmgr.host,
-			context.Background(), peerID, msgs)
+			context.Background(), peerID, outgoing)
 	}
 }

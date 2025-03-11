@@ -19,7 +19,7 @@ const (
 	ProtocolID      = "agentofthings/send_message/0.0.1"
 )
 
-func SendMessages(host host.Host, ctx context.Context, remote peer.ID, toSend []api.Message) error {
+func SendMessages(host host.Host, ctx context.Context, remote peer.ID, toSend api.Hub) error {
 	stream, err := host.NewStream(ctx, remote, protocol.ID(ProtocolID))
 	if err != nil {
 		return fmt.Errorf("send_message: failed to open stream to peer %s: %w", remote, err)
@@ -48,7 +48,7 @@ func SendMessages(host host.Host, ctx context.Context, remote peer.ID, toSend []
 	return nil
 }
 
-func SendMessageHandler(stream network.Stream, callback func(*[]api.Message, peer.ID)) {
+func SendMessageHandler(stream network.Stream, callback func(*api.Hub, peer.ID)) {
 	defer stream.Close()
 
 	if err := stream.SetDeadline(time.Now().Add(ProtocolTimeout)); err != nil {
@@ -57,7 +57,7 @@ func SendMessageHandler(stream network.Stream, callback func(*[]api.Message, pee
 		return
 	}
 
-	var remoteMessage []api.Message
+	var remoteMessage api.Hub
 	if err := transport.DecodeFromStream(stream, &remoteMessage); err != nil {
 		log.Printf("send_message handler: failed to decode remote handshake message: %v", err)
 		stream.Reset()

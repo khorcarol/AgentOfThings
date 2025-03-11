@@ -35,6 +35,8 @@ type ConnectionManager struct {
 	IncomingFriendRequest chan api.FriendRequest
 	// B->M, informs middle that a peer has disconnected
 	PeerDisconnections chan uuid.UUID
+	// B->M, informs middle of new messages
+	NewMessages chan api.Hub
 }
 
 func (cmgr *ConnectionManager) peerDisconnectWrapper() func(network.Network, network.Conn) {
@@ -118,6 +120,10 @@ func (cmgr *ConnectionManager) SendFriendRequest(user api.User, data api.FriendR
 	}
 
 	return user_to_friend.SendFriendData(cmgr.host, context.Background(), peerID, data)
+}
+
+func (cmgr *ConnectionManager) SendMessage(HubID api.ID, message api.Message) error {
+	return nil
 }
 
 func (cmgr *ConnectionManager) waitOnPeer(wg *sync.WaitGroup) {
