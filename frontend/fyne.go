@@ -174,7 +174,6 @@ func createUsersUI() fyne.CanvasObject {
 			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
 			return container.NewVBox(
 				widget.NewLabel("Anonymous User"),
-				layout.NewSpacer(),
 				widget.NewLabel("Interests: "),
 				image,
 				widget.NewButton("Send Friend Request", nil),
@@ -185,24 +184,24 @@ func createUsersUI() fyne.CanvasObject {
 			user := currentUsers[i]
 			container := o.(*fyne.Container)
 
-			interests_label := container.Objects[2].(*widget.Label)
+			interests_label := container.Objects[1].(*widget.Label)
 			interests_label.Text = "Interests: " + formatInterests(user.Interests)
 			interests_label.Refresh()
 
 			if imageUrl := getImage(user.Interests); imageUrl != nil {
-				image := container.Objects[3].(*canvas.Image)
+				image := container.Objects[2].(*canvas.Image)
 				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
 				image.FillMode = canvas.ImageFillContain
 			}
 
-			friendButton := container.Objects[4].(*widget.Button)
+			friendButton := container.Objects[3].(*widget.Button)
 
 			friendButton.OnTapped = func() {
 				middle.Seen(user.UserID)
 				middle.SendFriendRequest(user.UserID, true)
 			}
 
-			rejectButton := container.Objects[5].(*widget.Button)
+			rejectButton := container.Objects[4].(*widget.Button)
 
 			rejectButton.OnTapped = func() {
 				middle.Seen(user.UserID)
