@@ -9,6 +9,7 @@ import (
 	"image/color"
 	"io"
 	"log"
+	"strings"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -284,8 +285,8 @@ func createHubDialog(hub api.Hub, myWindow fyne.Window) {
 			message := hub.Messages[i]
 			container := o.(*fyne.Container)
 
-			nameLabel := container.Objects[0].(*widget.Label)
-			nameLabel.SetText(message.Contents)
+			messageLabel := container.Objects[0].(*widget.Label)
+			messageLabel.SetText(message.Contents)
 		},
 	)
 
@@ -296,16 +297,19 @@ func createHubDialog(hub api.Hub, myWindow fyne.Window) {
 	}
 	form.Refresh()
 
-	dialog := dialog.NewCustomWithoutButtons("Hub", container.NewBorder(nil, form, nil, nil, messages), myWindow)
+	dialog := dialog.NewCustomWithoutButtons(hub.HubName, container.NewBorder(nil, form, nil, nil, messages), myWindow)
 	close := widget.NewButton("Close", func() {
 		dialog.Hide()
 	})
 	send := widget.NewButton("Send", func() {
-		log.Println("Form submitted:", entry.Text)
-		middle.SendHubMessage(hub.HubID, entry.Text)
-		hub.Messages = append(hub.Messages, api.Message{Author: personal.GetSelf().User.UserID, Contents: entry.Text})
-		messages.Refresh()
-		entry.SetText("")
+		if strings.TrimSpace(entry.Text) != "" {
+
+			log.Println("Form submitted:", entry.Text)
+			middle.SendHubMessage(hub.HubID, entry.Text)
+			hub.Messages = append(hub.Messages, api.Message{Author: personal.GetSelf().User.UserID, Contents: entry.Text})
+			messages.Refresh()
+			entry.SetText("")
+		}
 	})
 	dialog.SetButtons([]fyne.CanvasObject{container.NewBorder(nil, nil, close, send)})
 	dialog.Resize(fyne.NewSize(500, 350))
@@ -399,6 +403,7 @@ func Run() {
 	onRefreshHubs([]api.Hub{
 		{
 			HubID:    api.ID{},
+			HubName:  "Test Hub",
 			Messages: []api.Message{{Author: api.ID{}, Contents: "Hello"}},
 		},
 	})
