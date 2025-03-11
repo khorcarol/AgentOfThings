@@ -220,6 +220,7 @@ func createUsersUI() fyne.CanvasObject {
 				middle.SendFriendRequest(user.UserID, false)
 			}
 			rejectButton.Hide()
+			friendButton.Enable()
 
 			if middle.HasIncomingFriendRequest(user.UserID) {
 				friendButton.SetText("Accept Friend Request")
@@ -229,7 +230,6 @@ func createUsersUI() fyne.CanvasObject {
 				friendButton.Disable()
 			} else {
 				friendButton.SetText("Send Friend Request")
-				friendButton.Enable()
 			}
 		},
 	)
