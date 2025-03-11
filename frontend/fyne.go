@@ -400,12 +400,6 @@ func Init() {
 }
 
 func Run() {
-	onRefreshHubs([]api.Hub{
-		{
-			HubID:    api.ID{},
-			HubName:  "Test Hub",
-			Messages: []api.Message{{Author: api.ID{}, Contents: "Hello"}},
-		},
-	})
+	
 	myWindow.ShowAndRun()
 }
