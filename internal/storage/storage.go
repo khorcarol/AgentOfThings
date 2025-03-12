@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	appDirName       = "AgentOfThings"
 	friendsFileName  = "friends.json"
 	personalFileName = "personal.json"
 )
@@ -25,12 +24,11 @@ func SetProfileSubdirectory(subdir string) {
 
 // returns directory where data should be stored
 func GetStorageDir() (string, error) {
-	configDir, err := os.UserConfigDir()
+	storageDir, err := getAppConfigDir()
 	if err != nil {
-		return "", fmt.Errorf("failed to get config directory: %w", err)
+		return "", err
 	}
 
-	storageDir := filepath.Join(configDir, appDirName)
 	if profileSubdirectory != nil {
 		storageDir = filepath.Join(storageDir, *profileSubdirectory)
 	}
@@ -43,21 +41,20 @@ func GetStorageDir() (string, error) {
 }
 
 func GetCacheDir() (string, error) {
-	configDir, err := os.UserCacheDir()
+	cacheDir, err := getAppCacheDir()
 	if err != nil {
-		return "", fmt.Errorf("failed to get cache directory: %w", err)
+		return "", err
 	}
 
-	storageDir := filepath.Join(configDir, appDirName)
 	if profileSubdirectory != nil {
-		storageDir = filepath.Join(storageDir, *profileSubdirectory)
+		cacheDir = filepath.Join(cacheDir, *profileSubdirectory)
 	}
 
-	if err := os.MkdirAll(storageDir, 0755); err != nil {
+	if err := os.MkdirAll(cacheDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create cache directory: %w", err)
 	}
 
-	return storageDir, nil
+	return cacheDir, nil
 }
 
 // serializes and writes friends map to disk
