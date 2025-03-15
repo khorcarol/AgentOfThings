@@ -189,6 +189,7 @@ func createUsersUI() fyne.CanvasObject {
 						nameLabel,
 						widget.NewLabel("Interests: "),
 					),
+					layout.NewSpacer(),
 					container.NewPadded(image),
 				),
 				widget.NewButton("Send Friend Request", nil),
@@ -205,7 +206,7 @@ func createUsersUI() fyne.CanvasObject {
 			interests_label.Text = "Interests: \n" + formatInterests(user.Interests)
 			interests_label.Refresh()
 
-			image := topContainer.Objects[1].(*fyne.Container).Objects[0].(*canvas.Image)
+			image := topContainer.Objects[2].(*fyne.Container).Objects[0].(*canvas.Image)
 			if imageUrl := getImage(user.Interests); imageUrl != nil {
 				image.Show()
 				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
