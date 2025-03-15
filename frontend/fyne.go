@@ -192,6 +192,7 @@ func createUsersUI() fyne.CanvasObject {
 					layout.NewSpacer(),
 					container.NewPadded(image),
 				),
+				layout.NewSpacer(),
 				widget.NewButton("Send Friend Request", nil),
 				widget.NewButton("Reject Friend Request", nil),
 			)
@@ -215,14 +216,14 @@ func createUsersUI() fyne.CanvasObject {
 				image.Hide()
 			}
 
-			friendButton := container.Objects[1].(*widget.Button)
+			friendButton := container.Objects[2].(*widget.Button)
 
 			friendButton.OnTapped = func() {
 				middle.Seen(user.UserID)
 				middle.SendFriendRequest(user.UserID, true)
 			}
 
-			rejectButton := container.Objects[2].(*widget.Button)
+			rejectButton := container.Objects[3].(*widget.Button)
 
 			rejectButton.OnTapped = func() {
 				middle.Seen(user.UserID)
