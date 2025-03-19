@@ -3,6 +3,7 @@ package connection
 import (
 	"context"
 	"log"
+	"net"
 	"sync"
 
 	"github.com/google/uuid"
@@ -19,6 +20,7 @@ import (
 	"github.com/libp2p/go-libp2p/core/protocol"
 	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/vishalkuo/bimap"
+	"github.com/wlynxg/anet"
 )
 
 type peerLevel int
@@ -62,7 +64,19 @@ func (cmgr *ConnectionManager) peerConnectWrapper() func(network.Network, networ
 	}
 }
 
+type netProvider struct{}
+
+func (netProvider) Interfaces() ([]net.Interface, error) {
+	return anet.Interfaces()
+}
+
+func (netProvider) InterfaceAddrs() ([]net.Addr, error) {
+	return anet.InterfaceAddrs()
+}
+
 func initConnectionManager() (*ConnectionManager, error) {
+	network.SetNetProvider(netProvider{})
+
 	cmgr := ConnectionManager{peersMutex: sync.Mutex{}}
 	_self, err := libp2p.New()
 	if err != nil {
