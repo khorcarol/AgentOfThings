@@ -179,10 +179,20 @@ func createUsersUI() fyne.CanvasObject {
 		func() fyne.CanvasObject {
 			image := &canvas.Image{}
 			image.SetMinSize(fyne.Size{Width: 200, Height: 200})
+
+			nameLabel := canvas.NewText("  Anonymous User", color.Black)
+			nameLabel.TextSize = 16
+
 			return container.NewVBox(
-				canvas.NewText("  Anonymous User", color.Black),
-				widget.NewLabel("Interests: "),
-				image,
+				container.NewHBox(
+					container.NewVBox(
+						nameLabel,
+						widget.NewLabel("Interests: "),
+					),
+					layout.NewSpacer(),
+					container.NewPadded(image),
+				),
+				layout.NewSpacer(),
 				widget.NewButton("Send Friend Request", nil),
 				widget.NewButton("Reject Friend Request", nil),
 			)
@@ -191,14 +201,13 @@ func createUsersUI() fyne.CanvasObject {
 			user := currentUsers[i]
 			container := o.(*fyne.Container)
 
-			nameLabel := container.Objects[0].(*canvas.Text)
-			nameLabel.TextSize = 16
+			topContainer := container.Objects[0].(*fyne.Container)
 
-			interests_label := container.Objects[1].(*widget.Label)
+			interests_label := topContainer.Objects[0].(*fyne.Container).Objects[1].(*widget.Label)
 			interests_label.Text = "Interests: \n" + formatInterests(user.Interests)
 			interests_label.Refresh()
 
-			image := container.Objects[2].(*canvas.Image)
+			image := topContainer.Objects[2].(*fyne.Container).Objects[0].(*canvas.Image)
 			if imageUrl := getImage(user.Interests); imageUrl != nil {
 				image.Show()
 				image.Resource, _ = fyne.LoadResourceFromURLString(*imageUrl)
@@ -207,14 +216,14 @@ func createUsersUI() fyne.CanvasObject {
 				image.Hide()
 			}
 
-			friendButton := container.Objects[3].(*widget.Button)
+			friendButton := container.Objects[2].(*widget.Button)
 
 			friendButton.OnTapped = func() {
 				middle.Seen(user.UserID)
 				middle.SendFriendRequest(user.UserID, true)
 			}
 
-			rejectButton := container.Objects[4].(*widget.Button)
+			rejectButton := container.Objects[3].(*widget.Button)
 
 			rejectButton.OnTapped = func() {
 				middle.Seen(user.UserID)
